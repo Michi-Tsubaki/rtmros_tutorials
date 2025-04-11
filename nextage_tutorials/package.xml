@@ -12,7 +12,7 @@
   <exec_depend>pr2eus</exec_depend>
   <exec_depend>euscollada</exec_depend>
   <exec_depend>nextage_description</exec_depend>
-  <exec_depend>nextage_gazebo</exec_depend>
+  <!--<exec_depend>nextage_gazebo</exec_depend>-->
 
   <export>
   </export>
