@@ -10,8 +10,7 @@
   <arg name="gripper_com_child_frame_id" default="robotiq_ft_frame_id"/>
   <arg name="use_tf" default="true"/>
 
-  <node pkg="tf2_ros" type="static_transform_publisher" name="ft_frame_pub" args="0 0 0 0 0 0 RARM_J\
-OINT5_Link robotiq_ft_frame_id" />
+  <node pkg="tf2_ros" type="static_transform_publisher" name="ft_frame_pub" args="0 0 0 0 0 0 RARM_JOINT5_Link robotiq_ft_frame_id" />
 
   <group if="$(arg use_tf)">
     <node pkg="gravity_compensation" type="tf_to_imu.py" name="tf_to_imu" output="screen">
@@ -21,8 +20,7 @@ OINT5_Link robotiq_ft_frame_id" />
     </node>
   </group>
 
-  <node name="$(arg node_name)" pkg="nextage_tutorials" type="gravity_compensation_node" cwd="node\
-" respawn="false" output="screen">
+  <node name="$(arg node_name)" pkg="nextage_tutorials" type="gravity_compensation_node" cwd="node" respawn="false" output="screen">
     <param name="wait_for_tf" value="true"/>
     <rosparam command="load" file="$(arg calib_data_file)"/>
     <remap from="$(arg node_name)/ft_raw" to="$(arg ft_raw)" />
