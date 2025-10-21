@@ -354,7 +354,8 @@
       <inertia ixx="0.00194072" ixy="-1.1e-07" ixz="-0.00042482" iyy="0.00209392" iyz="-1.2e-07" izz="0.00035788"/>
     </inertial>
   </link>
-  <link name="robotiq_ft_frame_id" /> 
+  <link name="robotiq_ft_frame_id" />
+  <link name="l515_head_link" />
   <xacro:transmission_nx_joint name="CHEST_JOINT0" />
   <joint name="CHEST_JOINT0" type="revolute">
     <parent link="WAIST"/>
@@ -381,6 +382,11 @@
     <axis   xyz="0 1 0"/>
     <limit lower="-0.349066" upper="1.22173" effort="100" velocity="0.5" />
     <dynamics damping="0.2" friction="0" />
+  </joint>
+  <joint name="l515_head_JOINT" type="fixed">
+    <parent link="HEAD_JOINT1_Link"/>
+    <child link="l515_head_link"/>
+    <origin xyz="0 0 0.08" rpy="3.14 -1.57 0"/>
   </joint>
   <xacro:transmission_nx_joint name="LARM_JOINT0" />
   <joint name="LARM_JOINT0" type="revolute">
@@ -495,7 +501,6 @@
     <child link="robotiq_ft_frame_id"/>
     <origin xyz="0 0 0" rpy="0 0 0"/>
   </joint>
-  
   <!-- Gazebo plugin for ROS Control -->
   <gazebo>
     <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
