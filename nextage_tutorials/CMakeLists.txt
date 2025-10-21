@@ -38,8 +38,17 @@ endif()
 #############
 ## Install ##
 #############
+catkin_install_python(PROGRAMS
+  scripts/tf_to_imu.py
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
 
-install(DIRECTORY config euslisp launch model sample
+install(PROGRAMS
+  scripts/create_udev_rules.sh
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
+install(DIRECTORY config euslisp launch model sample udev urdf
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
   USE_SOURCE_PERMISSIONS)
 
