@@ -20,4 +20,8 @@
   
   <include file="$(find nextage_tutorials)/launch/l515_head.launch" launch-prefix="bash -c 'sleep $(arg node_start_delay); $0 $@' ">
   </include>
+
+  <include file="$(find nextage_tutorials)/launch/dual_touch.launch" launch-prefix="bash -c 'sleep $(arg node_start_delay); $0 $@' ">
+  </include>
+
 </launch>
