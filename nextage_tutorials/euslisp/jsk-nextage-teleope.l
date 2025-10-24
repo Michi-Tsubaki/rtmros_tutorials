@@ -141,3 +141,8 @@
  (send *irtviewer* :draw-objects)
  (ros::sleep)
  )
+
+#|
+Memo: Using the tf conversion method descripted in https://github.com/YUKINA-3252/jsk_hironx_teleop/issues/2, we cannot control the ration of :translate, 
+So I don't use it intentionally.
+=#
