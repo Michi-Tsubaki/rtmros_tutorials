@@ -1,9 +1,14 @@
 (load "package://pr2eus/robot-interface.l")
 (require :nextage "package://nextage_tutorials/nextage.l")
 
+(when (ros::resolve-ros-path "package://dynamixel_detachable_hand/euslisp/lhand-interface.l")
+  (load "package://dynamixel_detachable_hand/euslisp/lhand-interface.l")
+  (load "package://dynamixel_detachable_hand/euslisp/rhand-interface.l"))
+
 (defclass nextage-interface
   :super robot-interface
   :slots ())
+
 (defmethod nextage-interface
   (:init (&rest args)
          (send-super :init :robot nextageopen-robot))
@@ -41,6 +46,50 @@
      (cons :controller-state "/head_controller/fstate")
      (cons :action-type control_msgs::FollowJointTrajectoryAction)
      (cons :joint-names (send-all (send robot :head :joint-list) :name)))))
+  (:lhand-init ()
+    (unless (boundp '*lhand*)
+      (setq *lhand* (instance lhand-interface :init)))
+    *lhand*)
+  (:rhand-init ()
+    (unless (boundp '*rhand*)
+      (setq *rhand* (instance rhand-interface :init)))
+    *rhand*)
+  (:start-grasp (&optional (arm :arms) &rest args)
+    (case arm
+      (:larm (send* (send self :lhand-init) :close args))
+      (:rarm (send* (send self :rhand-init) :close args))
+      (:arms (send* (send self :lhand-init) :close args)
+             (send* (send self :rhand-init) :close args))))
+  (:stop-grasp (&optional (arm :arms) &rest args)
+    (case arm
+      (:larm (send* (send self :lhand-init) :open args))
+      (:rarm (send* (send self :rhand-init) :open args))
+      (:arms (send* (send self :lhand-init) :open args)
+             (send* (send self :rhand-init) :open args))))
+  (:open-forceps (&optional (arm :arms) &rest args)
+    (case arm
+      (:larm (send* (send self :lhand-init) :open-forceps args))
+      (:rarm (send* (send self :rhand-init) :open-forceps args))
+      (:arms (send* (send self :lhand-init) :open-forceps args)
+             (send* (send self :rhand-init) :open-forceps args))))
+  (:close-forceps (&optional (arm :arms) &rest args)
+    (case arm
+      (:larm (send* (send self :lhand-init) :close-forceps args))
+      (:rarm (send* (send self :rhand-init) :close-forceps args))
+      (:arms (send* (send self :lhand-init) :close-forceps args)
+             (send* (send self :rhand-init) :close-forceps args))))
+  (:open-holder (&optional (arm :arms) &rest args)
+    (case arm
+      (:larm (send* (send self :lhand-init) :open-holder args))
+      (:rarm (send* (send self :rhand-init) :open-holder args))
+      (:arms (send* (send self :lhand-init) :open-holder args)
+             (send* (send self :rhand-init) :open-holder args))))
+  (:close-holder (&optional (arm :arms) &rest args)
+    (case arm
+      (:larm (send* (send self :lhand-init) :close-holder args))
+      (:rarm (send* (send self :rhand-init) :close-holder args))
+      (:arms (send* (send self :lhand-init) :close-holder args)
+             (send* (send self :rhand-init) :close-holder args))))
   )
 
 (defun nextage-init ()
