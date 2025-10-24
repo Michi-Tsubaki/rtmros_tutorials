@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <?xml version="1.0"?>
 <robot name="NextageOpen"
        xmlns:xi="http://www.w3.org/2001/XInclude"
@@ -216,12 +217,6 @@
   </link>
   <xacro:gazebo_nx_link name="LARM_JOINT5_Link" color="Black" />
   <link name="LARM_JOINT5_Link">
-    <visual>
-      <origin xyz="-0.047 0 -0.09" rpy="0 -0 0"/>
-      <geometry>
-        <mesh filename="package://nextage_description/urdf/meshes/LARM_JOINT5_Link_mesh.dae" scale="1 1 1" />
-      </geometry>
-    </visual>
     <collision>
       <origin xyz="-0.047 0 -0.09" rpy="0 -0 0"/>
       <geometry>
@@ -336,12 +331,6 @@
   </link>
   <xacro:gazebo_nx_link name="RARM_JOINT5_Link" color="Black" />
   <link name="RARM_JOINT5_Link">
-    <visual>
-      <origin xyz="-0.047 0 -0.09" rpy="0 -0 0"/>
-      <geometry>
-        <mesh filename="package://nextage_description/urdf/meshes/RARM_JOINT5_Link_mesh.dae" scale="1 1 1" />
-      </geometry>
-    </visual>
     <collision>
       <origin xyz="-0.047 0 -0.09" rpy="0 -0 0"/>
       <geometry>
@@ -356,6 +345,7 @@
   </link>
   <link name="robotiq_ft_frame_id" />
   <link name="l515_head_link" />
+  <link name="d405_lhand_link" />
   <xacro:transmission_nx_joint name="CHEST_JOINT0" />
   <joint name="CHEST_JOINT0" type="revolute">
     <parent link="WAIST"/>
@@ -386,7 +376,7 @@
   <joint name="l515_head_JOINT" type="fixed">
     <parent link="HEAD_JOINT1_Link"/>
     <child link="l515_head_link"/>
-    <origin xyz="0 0 0.08" rpy="3.14 -1.57 0"/>
+    <origin xyz="0.04262992739677429 0.003417777828872204 0.2187749296426773" rpy="-0.01587047875322337 0.32894825550023404 -0.010923614699026397"/>
   </joint>
   <xacro:transmission_nx_joint name="LARM_JOINT0" />
   <joint name="LARM_JOINT0" type="revolute">
@@ -441,6 +431,11 @@
     <axis   xyz="1 0 0"/>
     <limit lower="-2.84489" upper="2.84489" effort="100" velocity="0.5" />
     <dynamics damping="0.2" friction="0" />
+  </joint>
+  <joint name="d405_lhand_JOINT" type="fixed">
+    <parent link="LARM_JOINT5_Link"/>
+    <child link="d405_lhand_link"/>
+    <origin xyz="-0.053 -0.068 -0.049" rpy="-2.459 -0.446 2.857"/>
   </joint>
   <xacro:transmission_nx_joint name="RARM_JOINT0" />
   <joint name="RARM_JOINT0" type="revolute">

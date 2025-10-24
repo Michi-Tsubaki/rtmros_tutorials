@@ -1,22 +1,20 @@
 #!/usr/bin/env roseus
-;; Load packages
-(ros::load-ros-manifest "roseus")
-(ros::roseus "nextage-phantom")
+
+(ros::roseus "jsk-nextage-teleop")
 (ros::roseus-add-msgs "geometry_msgs")
 (ros::roseus-add-msgs "omni_msgs")
+
 (load "models/arrow-object.l")
-(require "package://nextage_tutorials/euslisp/nextage-interface.l")
-(require "package://dynamixel_detachable_hand/euslisp/lhand-interface.l")
-(require "package://dynamixel_detachable_hand/euslisp/rhand-interface.l")
+(require "package://nextage_tutorials/euslisp/nextage-utils.l")
 
 ;; Parameters
 (setq *use-torso* nil)
 (setq *use-hand* nil)
-(setq *base-offset-l* (float-vector 380 200 0))
-(setq *base-offset-r* (float-vector 380 -200 0))
-(setq *ratio* 3.0) ;; control ratio
-(setq *send-time* 100) ;; ms
-(ros::rate 10) ;; Hz *send-time* and rate should be balanced.
+(setq *base-offset-l* (float-vector 400 100 50))
+(setq *base-offset-r* (float-vector 400 -100 50))
+(setq *send-time* 200)
+(setq *ratio* 0.5)
+(ros::rate 5)
 
 (defun initialize-variables()
   (setq *lpos* nil)
@@ -36,16 +34,9 @@
 (defun check-work-limit()
   )
 
-(defun check-collision()
-  )
-
 (defun left-phantom-cb (msg)
   (setq *lpos* (send msg :pose :position))
   (setq *lrot* (send msg :pose :orientation))
-;;  (setq *ltf* (ros::tf-pose->coords (send msg :pose)))
-;;  (setq *lcoords* (make-coords :rot (copy-object (send *ltf* :rot))))
-;;  (send *lcoords* :rotate pi/2 :x :world) 
-;;  (send *lcoords* :locate (send *ltf* :worldpos) :world)
   (setq *lclose* (send msg :close_gripper))
   (setq *llocked* (send msg :locked))
   )
@@ -53,17 +44,10 @@
 (defun right-phantom-cb (msg)
   (setq *rpos* (send msg :pose :position))
   (setq *rrot* (send msg :pose :orientation))
-;;  (setq *rtf* (ros::tf-pose->coords (send msg :pose)))
-;;  (setq *rcoords* (make-coords :rot (copy-object (send *rtf* :rot))))
-;;  (send *rcoords* :rotate pi/2 :x :world) 
-;;  (send *rcoords* :locate (send *rtf* :worldpos) :world)
   (setq *rclose* (send msg :close_gripper))
   (setq *rlocked* (send msg :locked))
   )
 
-
-;; Initialize
-(ros::rate 10)
 (ros::subscribe "/left_device/phantom/state" omni_msgs::OmniState #'left-phantom-cb)
 (ros::subscribe "/right_device/phantom/state" omni_msgs::OmniState #'right-phantom-cb)
 
@@ -86,7 +70,7 @@
 
 ;; Reset robot
 (send *nextage* :reset-pose)
-(send *nextage* :head :angle-vector #f(0 10))
+(send *nextage* :head :angle-vector #f(0 60))
 (send *ri* :angle-vector (send *nextage* :angle-vector) 1000)
 (send *ri* :wait-interpolation)
 (send *irtviewer* :draw-objects)
@@ -100,7 +84,9 @@
 (do-until-key
  (ros::spin-once)
  
- (when (and *lcoords* (not *llocked*))
+ (setq ik-success t)
+ 
+ (when (and *lpos* *lrot* (not *llocked*))
    (setq *lx* (+ (* (send *lpos* :y) *ratio*) (elt *base-offset-l* 0)))
    (setq *ly* (+ (* (- 0 (send *lpos* :x)) *ratio*) (elt *base-offset-l* 1)))
    (setq *lz* (+ (* (send *lpos* :z) *ratio*) (elt *base-offset-l* 2)))
@@ -110,9 +96,8 @@
 						 (send *lrot* :z))))
    (setq lR_dst (m* R_map lR_src))
    (setq *larm-target* (make-coords :pos (float-vector *lx* *ly* *lz*) :rot lR_dst))
-   (send *la-target* :move-to *larm-target* :world)
-   (send *la-end* :move-to (send (send *nextage* :larm :end-coords) :copy-worldcoords) :world)
-   (send *nextage* :larm :inverse-kinematics *larm-target* :use-torso *use-torso* :rotation-axis t :stop 4 :revert-if-fail nil))
+   (unless (send *nextage* :larm :inverse-kinematics *larm-target* :use-torso *use-torso* :rotation-axis t :stop 10 :revert-if-fail t)
+     (setq ik-success nil)))
  
  (when (and *rpos* *rrot* (not *rlocked*))
    (setq *rx* (+ (* (send *rpos* :y) *ratio*) (elt *base-offset-r* 0)))
@@ -124,25 +109,18 @@
 						 (send *rrot* :z))))
    (setq rR_dst (m* R_map rR_src))
    (setq *rarm-target* (make-coords :pos (float-vector *rx* *ry* *rz*) :rot rR_dst))
-   (send *nextage* :rarm :inverse-kinematics *rarm-target* :use-torso *use-torso* :rotation-axis t :stop 4 :revert-if-fail nil))
+   (unless (send *nextage* :rarm :inverse-kinematics *rarm-target* :use-torso *use-torso* :rotation-axis t :stop 10 :revert-if-fail t)
+     (setq ik-success nil)))
  
- (send *ri* :angle-vector (send *nextage* :angle-vector) 100)
+ (when *lclose* (send *ri* :close-forceps :larm))
+ (unless *lclose* (send *ri* :open-forceps :larm))
+ (when *rclose* (send *ri* :close :rarm))
+ (unless *rclose* (send *ri* :open-holder :rarm))
  
-  (when (and *lclose* (not *llocked*))
-    (if *lclose*
-        (send *lhand* :close)
-      (send *lhand* :open)))
- 
-  (when (and *rclose* (not *rlocked*))
-    (if *rclose*
-        (send *rhand* :close-holder)
-      (send *rhand* :open-holder)))
+ (when (and ik-success (not (send *nextage* :self-collision-check)))
+   (send *ri* :angle-vector (send *nextage* :angle-vector) *send-time* nil 0 :min-time 0)
+   )
  
  (send *irtviewer* :draw-objects)
  (ros::sleep)
  )
-
-#|
-Memo: Using the tf conversion method descripted in https://github.com/YUKINA-3252/jsk_hironx_teleop/issues/2, we cannot control the ration of :translate, 
-So I don't use it intentionally.
-=#
