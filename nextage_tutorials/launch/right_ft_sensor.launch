@@ -1,5 +1,5 @@
 <launch>
-  <arg name="device" default="ttyUSB0"/>
+  <arg name="device" default="rftsensor"/>
   <node pkg="robotiq_ft_sensor" type="rq_sensor" name="rq_sensor" output="screen" required="true">
     <param name="ftdi_id" type="string" value="$(arg device)" />
   </node>
