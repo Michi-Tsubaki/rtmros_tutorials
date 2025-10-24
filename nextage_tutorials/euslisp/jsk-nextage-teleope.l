@@ -6,6 +6,7 @@
 (ros::roseus-add-msgs "omni_msgs")
 (load "models/arrow-object.l")
 (require "package://nextage_tutorials/euslisp/nextage-interface.l")
+(require "package://nextage_tutorials/euslisp/nextage-utils.l")
 (require "package://dynamixel_detachable_hand/euslisp/lhand-interface.l")
 (require "package://dynamixel_detachable_hand/euslisp/rhand-interface.l")
 
@@ -34,9 +35,6 @@
   )
 
 (defun check-work-limit()
-  )
-
-(defun check-collision()
   )
 
 (defun left-phantom-cb (msg)
@@ -86,7 +84,7 @@
 
 ;; Reset robot
 (send *nextage* :reset-pose)
-(send *nextage* :head :angle-vector #f(0 10))
+(send *nextage* :head :angle-vector #f(0 50))
 (send *ri* :angle-vector (send *nextage* :angle-vector) 1000)
 (send *ri* :wait-interpolation)
 (send *irtviewer* :draw-objects)
@@ -126,20 +124,20 @@
    (setq *rarm-target* (make-coords :pos (float-vector *rx* *ry* *rz*) :rot rR_dst))
    (send *nextage* :rarm :inverse-kinematics *rarm-target* :use-torso *use-torso* :rotation-axis t :stop 4 :revert-if-fail nil))
  
- (send *ri* :angle-vector (send *nextage* :angle-vector) 100)
+ (when (and *lclose* (not *llocked*))
+   (if *lclose*
+       (send *lhand* :close)
+     (send *lhand* :open)))
  
-  (when (and *lclose* (not *llocked*))
-    (if *lclose*
-        (send *lhand* :close)
-      (send *lhand* :open)))
- 
-  (when (and *rclose* (not *rlocked*))
-    (if *rclose*
-        (send *rhand* :close-holder)
-      (send *rhand* :open-holder)))
- 
- (send *irtviewer* :draw-objects)
- (ros::sleep)
+ (when (and *rclose* (not *rlocked*))
+   (if *rclose*
+       (send *rhand* :close)
+     (send *rhand* :open)))
+ (if (not (nextage-collision-check))
+     (send *ri* :angle-vector (send *nextage* :angle-vector) 100)
+   (send *irtviewer* :draw-objects)
+   (ros::sleep)
+   )
  )
 
 #|
