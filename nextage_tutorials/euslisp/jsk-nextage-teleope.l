@@ -14,9 +14,9 @@
 (setq *use-hand* nil)
 (setq *base-offset-l* (float-vector 350 100 0))
 (setq *base-offset-r* (float-vector 350 -100 0))
-(setq *ratio* 1.0) ;; control ratio
-(setq *send-time* 50) ;; ms
-(ros::rate 100) ;; Hz *send-time* and rate should be balanced.
+(setq *send-time* 200)
+(setq *ratio* 0.8)
+(ros::rate 50)
 
 (defun initialize-variables()
   (setq *lpos* nil)
@@ -97,6 +97,8 @@
 (do-until-key
  (ros::spin-once)
  
+ (setq ik-success t)
+ 
  (when (and *lpos* *lrot* (not *llocked*))
    (setq *lx* (+ (* (send *lpos* :y) *ratio*) (elt *base-offset-l* 0)))
    (setq *ly* (+ (* (- 0 (send *lpos* :x)) *ratio*) (elt *base-offset-l* 1)))
@@ -107,7 +109,8 @@
 						 (send *lrot* :z))))
    (setq lR_dst (m* R_map lR_src))
    (setq *larm-target* (make-coords :pos (float-vector *lx* *ly* *lz*) :rot lR_dst))
-   (send *nextage* :larm :inverse-kinematics *larm-target* :use-torso *use-torso* :rotation-axis t :stop 4 :revert-if-fail nil))
+   (unless (send *nextage* :larm :inverse-kinematics *larm-target* :use-torso *use-torso* :rotation-axis t :stop 10 :revert-if-fail t)
+     (setq ik-success nil)))
  
  (when (and *rpos* *rrot* (not *rlocked*))
    (setq *rx* (+ (* (send *rpos* :y) *ratio*) (elt *base-offset-r* 0)))
@@ -119,26 +122,20 @@
 						 (send *rrot* :z))))
    (setq rR_dst (m* R_map rR_src))
    (setq *rarm-target* (make-coords :pos (float-vector *rx* *ry* *rz*) :rot rR_dst))
-   (send *nextage* :rarm :inverse-kinematics *rarm-target* :use-torso *use-torso* :rotation-axis t :stop 4 :revert-if-fail nil))
+   (unless (send *nextage* :rarm :inverse-kinematics *rarm-target* :use-torso *use-torso* :rotation-axis t :stop 10 :revert-if-fail t)
+     (setq ik-success nil)))
  
-
- (if *lclose*
-     (send *lhand* :close-forceps)
-   (send *lhand* :open-forceps)
-   )
+ (when *lclose* (send *lhand* :close-forceps))
+ (unless *lclose* (send *lhand* :open-forceps))
+ (when *rclose* (send *rhand* :close-holder))
+ (unless *rclose* (send *rhand* :open-holder))
  
- (if *rclose*
-     (send *rhand* :close-holder)
-   (send *rhand* :open-holder)
-   )
+ (when (and ik-success (not (nextage-collision-check)))
+   (send *ri* :angle-vector (send *nextage* :angle-vector) *send-time*))
  
- (if (not (nextage-collision-check))
-     (send *ri* :angle-vector (send *nextage* :angle-vector) *send-time*)
-   (send *irtviewer* :draw-objects)
-   (ros::sleep)
-   )
+ (send *irtviewer* :draw-objects)
+ (ros::sleep)
  )
-
 #|
 Memo: Using the tf conversion method descripted in https://github.com/YUKINA-3252/jsk_hironx_teleop/issues/2, we cannot control the ration of :translate, 
 So I don't use it intentionally.
