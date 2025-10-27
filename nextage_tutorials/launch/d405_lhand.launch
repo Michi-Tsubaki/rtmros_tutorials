@@ -1,10 +1,10 @@
 <launch>
-  <arg name="serial_no"           default="f0233276"/>
+  <arg name="serial_no"           default="230322275554"/>
   <arg name="usb_port_id"         default=""/>
   <arg name="device_type"         default=""/>
   <arg name="json_file_path"      default=""/>
-  <arg name="camera"              default="head_camera"/>
-  <arg name="tf_prefix"           default="l515_head"/>
+  <arg name="camera"              default="lhand_camera"/>
+  <arg name="tf_prefix"           default="d405_lhand"/>
   <arg name="external_manager"    default="false"/>
   <arg name="manager"             default="realsense2_camera_manager"/>
   <arg name="output"              default="screen"/>
