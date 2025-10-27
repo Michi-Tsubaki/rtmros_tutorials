@@ -9,15 +9,14 @@
 (require "package://nextage_tutorials/euslisp/nextage-utils.l")
 (require "package://dynamixel_detachable_hand/euslisp/lhand-interface.l")
 (require "package://dynamixel_detachable_hand/euslisp/rhand-interface.l")
-
 ;; Parameters
 (setq *use-torso* nil)
 (setq *use-hand* nil)
-(setq *base-offset-l* (float-vector 380 200 0))
-(setq *base-offset-r* (float-vector 380 -200 0))
-(setq *ratio* 3.0) ;; control ratio
-(setq *send-time* 100) ;; ms
-(ros::rate 10) ;; Hz *send-time* and rate should be balanced.
+(setq *base-offset-l* (float-vector 350 100 0))
+(setq *base-offset-r* (float-vector 350 -100 0))
+(setq *ratio* 1.0) ;; control ratio
+(setq *send-time* 50) ;; ms
+(ros::rate 100) ;; Hz *send-time* and rate should be balanced.
 
 (defun initialize-variables()
   (setq *lpos* nil)
@@ -98,7 +97,7 @@
 (do-until-key
  (ros::spin-once)
  
- (when (and *lcoords* (not *llocked*))
+ (when (and *lpos* *lrot* (not *llocked*))
    (setq *lx* (+ (* (send *lpos* :y) *ratio*) (elt *base-offset-l* 0)))
    (setq *ly* (+ (* (- 0 (send *lpos* :x)) *ratio*) (elt *base-offset-l* 1)))
    (setq *lz* (+ (* (send *lpos* :z) *ratio*) (elt *base-offset-l* 2)))
@@ -108,8 +107,6 @@
 						 (send *lrot* :z))))
    (setq lR_dst (m* R_map lR_src))
    (setq *larm-target* (make-coords :pos (float-vector *lx* *ly* *lz*) :rot lR_dst))
-   (send *la-target* :move-to *larm-target* :world)
-   (send *la-end* :move-to (send (send *nextage* :larm :end-coords) :copy-worldcoords) :world)
    (send *nextage* :larm :inverse-kinematics *larm-target* :use-torso *use-torso* :rotation-axis t :stop 4 :revert-if-fail nil))
  
  (when (and *rpos* *rrot* (not *rlocked*))
@@ -124,17 +121,19 @@
    (setq *rarm-target* (make-coords :pos (float-vector *rx* *ry* *rz*) :rot rR_dst))
    (send *nextage* :rarm :inverse-kinematics *rarm-target* :use-torso *use-torso* :rotation-axis t :stop 4 :revert-if-fail nil))
  
- (when (and *lclose* (not *llocked*))
-   (if *lclose*
-       (send *lhand* :close)
-     (send *lhand* :open)))
+
+ (if *lclose*
+     (send *lhand* :close-forceps)
+   (send *lhand* :open-forceps)
+   )
  
- (when (and *rclose* (not *rlocked*))
-   (if *rclose*
-       (send *rhand* :close)
-     (send *rhand* :open)))
+ (if *rclose*
+     (send *rhand* :close-holder)
+   (send *rhand* :open-holder)
+   )
+ 
  (if (not (nextage-collision-check))
-     (send *ri* :angle-vector (send *nextage* :angle-vector) 100)
+     (send *ri* :angle-vector (send *nextage* :angle-vector) *send-time*)
    (send *irtviewer* :draw-objects)
    (ros::sleep)
    )
