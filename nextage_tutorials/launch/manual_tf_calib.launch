@@ -1,0 +1,18 @@
+<launch>
+  <node name="marker_6dof_left_tf_hand_to_depth"
+        pkg="jsk_interactive_marker" type="marker_6dof">
+    <rosparam>
+      object_type: cube
+      frame_id: LARM_JOINT5_Link
+      publish_tf: true
+      tf_frame: d405_lhand_link
+      object_x: 0.1
+      object_y: 0.1
+      object_z: 0.1
+      initial_x: -0.06389
+      initial_y: -0.04099
+      initial_z: -0.0397
+      initial_orientation: [-0.32028598357632193, -0.4779897040147819, -0.26448673000322787, 0.7739441202261368]
+    </rosparam>
+  </node>
+</launch>
