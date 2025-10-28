@@ -60,7 +60,6 @@
 
 
 ;; Initialize
-(ros::rate 10)
 (ros::subscribe "/left_device/phantom/state" omni_msgs::OmniState #'left-phantom-cb)
 (ros::subscribe "/right_device/phantom/state" omni_msgs::OmniState #'right-phantom-cb)
 
@@ -83,7 +82,7 @@
 
 ;; Reset robot
 (send *nextage* :reset-pose)
-(send *nextage* :head :angle-vector #f(0 50))
+(send *nextage* :head :angle-vector #f(0 60))
 (send *ri* :angle-vector (send *nextage* :angle-vector) 1000)
 (send *ri* :wait-interpolation)
 (send *irtviewer* :draw-objects)
