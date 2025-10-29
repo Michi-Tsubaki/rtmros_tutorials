@@ -21,13 +21,3 @@
 (send *ri* :angle-vector (send *nextage* :angle-vector) 2000)
 (send *ri* :wait-interpolation)
 (send *irtviewer* :draw-objects)
-
-(setq *camera* (send (send *nextage* :larm :end-coords) :copy-worldcoords))
-(send *camera* :rotate (deg2rad -90) :y)
-(send *camera* :translate #f(190 0 0))
-(send *camera* :draw-on :flush t)
-(send *camera* :translate #f(-53 -68 -49))
-(send *camera* :rotate -2.459 :x)
-(send *camera* :rotate -0.446 :y)
-(send *camera* :rotate 2.857 :z)
-(send *camera* :draw-on :flush t)
