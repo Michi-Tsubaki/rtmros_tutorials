@@ -38,11 +38,17 @@ endif()
 #############
 ## Install ##
 #############
-install(PROGRAMS
-  scripts/create_udev_rules.sh
-  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+file(GLOB SCRIPTS_FILES scripts/*.py)
+catkin_install_python(
+  PROGRAMS ${SCRIPTS_FILES}
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/scripts
 )
-
+install(DIRECTORY scripts
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+  USE_SOURCE_PERMISSIONS
+  PATTERN "*"
+  PATTERN "*/*.py" EXCLUDE
+)
 install(DIRECTORY config euslisp launch model sample udev urdf
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
   USE_SOURCE_PERMISSIONS)
