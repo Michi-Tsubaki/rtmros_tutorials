@@ -1,6 +1,4 @@
 #!/usr/bin/env roseus
-;; Load packages
-(ros::load-ros-manifest "roseus")
 (ros::roseus "nextage-phantom")
 (ros::roseus-add-msgs "geometry_msgs")
 (ros::roseus-add-msgs "omni_msgs")
