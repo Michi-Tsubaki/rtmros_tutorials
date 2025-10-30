@@ -38,11 +38,6 @@ endif()
 #############
 ## Install ##
 #############
-catkin_install_python(PROGRAMS
-  scripts/tf_to_imu.py
-  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-)
-
 install(PROGRAMS
   scripts/create_udev_rules.sh
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
