@@ -28,7 +28,11 @@
   (setq *rtf* nil)
   (setq *rcoords* nil)
   (setq *rclose* nil)
-  (setq *rlocked* nil)
+  (setq *rlocked* nil)  
+  (setq *lhand-state* nil)
+  (setq *lhand-state* nil)
+  (setq *prev-llock* nil)
+  (setq *prev-rlock* nil)
   )
 
 (defun check-work-limit()
@@ -121,11 +125,26 @@
    (setq *rarm-target* (make-coords :pos (float-vector *rx* *ry* *rz*) :rot rR_dst))
    (unless (send *nextage* :rarm :inverse-kinematics *rarm-target* :use-torso *use-torso* :rotation-axis t :stop 10 :revert-if-fail t)
      (setq ik-success nil)))
- 
- (when *lclose* (send *lhand* :close-forceps))
- (unless *lclose* (send *lhand* :open-forceps))
- (when *rclose* (send *rhand* :close-holder))
- (unless *rclose* (send *rhand* :open-holder))
+
+ (when (not (eq *lclose* *prev-llock*))
+  (if *lclose*
+      (progn
+        (send *lhand* :open-forceps)
+        (setq *lhand-state* t))
+      (progn
+        (send *lhand* :close-forceps)
+        (setq *lhand-state* nil)))
+  (setq *prev-llock* *lclose*))
+
+(when (not (eq *rclose* *prev-rlock*))
+  (if *rclose*
+      (progn
+        (send *rhand* :open-holder)
+        (setq *rhand-state* t))
+      (progn
+        (send *rhand* :close-holder)
+        (setq *rhand-state* nil)))
+  (setq *prev-rlock* *rclose*))
  
  (when (and ik-success (not (nextage-collision-check)))
    (send *ri* :angle-vector (send *nextage* :angle-vector) *send-time*))
@@ -133,6 +152,7 @@
  (send *irtviewer* :draw-objects)
  (ros::sleep)
  )
+
 #|
 Memo: Using the tf conversion method descripted in https://github.com/YUKINA-3252/jsk_hironx_teleop/issues/2, we cannot control the ration of :translate, 
 So I don't use it intentionally.
