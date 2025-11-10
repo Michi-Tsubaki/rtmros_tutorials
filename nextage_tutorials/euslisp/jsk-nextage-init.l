@@ -1,21 +1,20 @@
 #!/usr/bin/env roseus
-(ros::roseus "nextage-init")
-(ros::roseus-add-msgs "geometry_msgs")
-(ros::roseus-add-msgs "omni_msgs")
-(require "package://nextage_tutorials/euslisp/nextage-interface.l")
+
 (require "package://nextage_tutorials/euslisp/nextage-utils.l")
 (require "package://dynamixel_detachable_hand/euslisp/lhand-interface.l")
 (require "package://dynamixel_detachable_hand/euslisp/rhand-interface.l")
-
 (nextage-init)
-(setq *robot* *nextage*)
 (lhand-init)
 (rhand-init)
+
+(setq *robot* *nextage*)
 (objects (list *robot*))
 (send *robot* :reset-pose)
 (send *robot* :head :angle-vector #f(0 60))
-(send *rhand* :close-holder)
-(send *lhand* :open-forceps)
+(send *robot* :larm :move-end-pos #f(0 0 100))
+(send *robot* :rarm :move-end-pos #f(0 0 100))
 (send *ri* :angle-vector (send *nextage* :angle-vector) 2000)
 (send *ri* :wait-interpolation)
+(send *rhand* :close-holder)
+(send *lhand* :open-forceps)
 (send *irtviewer* :draw-objects)
