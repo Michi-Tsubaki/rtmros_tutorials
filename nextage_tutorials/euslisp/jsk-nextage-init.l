@@ -2,8 +2,6 @@
 
 (require "package://nextage_tutorials/euslisp/nextage-utils.l")
 (nextage-init)
-(lhand-init)
-(rhand-init)
 
 (setq *robot* *nextage*)
 (objects (list *robot*))
