@@ -435,7 +435,7 @@
   <joint name="d405_lhand_JOINT" type="fixed">
     <parent link="LARM_JOINT5_Link"/>
     <child link="d405_lhand_link"/>
-    <origin xyz="-0.066 -0.059 -0.033" rpy="-2.333 -0.376 2.750"/>
+    <origin xyz="-0.067 -0.058 -0.056" rpy="-2.313 -0.446 2.857"/>
   </joint>
   <xacro:transmission_nx_joint name="RARM_JOINT0" />
   <joint name="RARM_JOINT0" type="revolute">
