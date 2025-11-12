@@ -1,6 +1,8 @@
 (load "package://pr2eus/robot-interface.l")
+;; (load "package://hrpsys_ros_bridge/euslisp/rtm-ros-robot-interface.l")
 (require :nextage "package://nextage_tutorials/nextage.l")
 
+;; If dynamixel hand is available
 (when (ros::resolve-ros-path "package://dynamixel_detachable_hand/euslisp/lhand-interface.l")
   (load "package://dynamixel_detachable_hand/euslisp/lhand-interface.l")
   (load "package://dynamixel_detachable_hand/euslisp/rhand-interface.l"))
@@ -11,13 +13,23 @@
 
 (defmethod nextage-interface
   (:init (&rest args)
-         (send-super :init :robot nextageopen-robot))
-  (:default-controller ()
-   (append
-    (send self :larm-controller)
-    (send self :rarm-controller)
-    (send self :torso-controller)
-    (send self :head-controller)))
+         (send-super :init :robot nextageopen-robot)
+    (setq on-gazebo-ros-control
+          (and (ros::get-param "/gazebo/time_step" nil)
+               ;; rtm-ros-bridge does not have type parametrs
+               (ros::get-param "/torso_controller/type" nil)))
+    (when on-gazebo-ros-control
+      (ros::ros-warn "Found Gazebo/ros_control environment"))
+    )
+  (when on-gazebo-ros-control  
+    (:default-controller ()
+			 (append
+			  (send self :larm-controller)
+			  (send self :rarm-controller)
+			  (send self :torso-controller)
+			  (send self :head-controller))
+			 )
+    )
   (:larm-controller ()
    (list
     (list
