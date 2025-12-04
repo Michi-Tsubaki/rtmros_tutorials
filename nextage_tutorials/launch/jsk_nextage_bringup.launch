@@ -6,9 +6,6 @@
   <include file="$(find nextage_tutorials)/launch/d405_lhand.launch" >
   </include>
 
-  <include file="$(find nextage_tutorials)/launch/right_ft_sensor.launch" >
-  </include>
-
   <include file="$(find nextage_tutorials)/launch/dual_touch.launch" >
   </include>
 
