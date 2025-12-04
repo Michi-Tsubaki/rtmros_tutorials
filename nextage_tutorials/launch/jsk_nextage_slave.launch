@@ -1,0 +1,19 @@
+<launch>
+  <include file="$(find dynamixel_detachable_hand)/launch/dual_hand.launch">
+  </include>
+
+  <group ns="right_ft">
+    <node pkg="leptrino_force_torque" type="leptrino_force_torque" name="right_ft" output="screen">
+      <param name="com_port" value="/dev/right_ft_sensor" />
+    </node>
+  </group>
+  
+  <group ns="left_ft">
+    <node pkg="leptrino_force_torque" type="leptrino_force_torque" name="left_ft" output="screen">
+      <param name="com_port" value="/dev/left_ft_sensor" />  	  	
+    </node>
+  </group>
+
+  <include file="$(find voicevox)/launch/voicevox_texttospeech.launch">
+  </include>
+</launch>
