@@ -376,7 +376,7 @@
   <joint name="l515_head_JOINT" type="fixed">
     <parent link="HEAD_JOINT1_Link"/>
     <child link="l515_head_link"/>
-    <origin xyz="0.04262992739677429 0.003417777828872204 0.2187749296426773" rpy="-0.01587047875322337 0.32894825550023404 -0.010923614699026397"/>
+    <origin xyz="0.067 0.001 0.210" rpy="0.008 0.318 0.029"/>
   </joint>
   <xacro:transmission_nx_joint name="LARM_JOINT0" />
   <joint name="LARM_JOINT0" type="revolute">
@@ -435,7 +435,7 @@
   <joint name="d405_lhand_JOINT" type="fixed">
     <parent link="LARM_JOINT5_Link"/>
     <child link="d405_lhand_link"/>
-    <origin xyz="-0.067 -0.058 -0.056" rpy="-2.313 -0.446 2.857"/>
+    <origin xyz="-0.087 -0.047 -0.070" rpy="-2.307 -0.379 2.775"/>
   </joint>
   <xacro:transmission_nx_joint name="RARM_JOINT0" />
   <joint name="RARM_JOINT0" type="revolute">
