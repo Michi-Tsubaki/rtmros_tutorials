@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.0.2)
 project(nextage_tutorials)
 
 find_package(catkin REQUIRED
@@ -38,14 +38,16 @@ endif()
 #############
 ## Install ##
 #############
-catkin_install_python(PROGRAMS
-  scripts/tf_to_imu.py
-  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+file(GLOB_RECURSE SCRIPTS_FILES *.py)
+catkin_install_python(
+  PROGRAMS ${SCRIPTS_FILES}
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/scripts
 )
-
-install(PROGRAMS
-  scripts/create_udev_rules.sh
-  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+install(DIRECTORY scripts
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+  USE_SOURCE_PERMISSIONS
+  PATTERN "*"
+  PATTERN "*/*.py" EXCLUDE
 )
 
 install(DIRECTORY config euslisp launch model sample udev urdf

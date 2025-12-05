@@ -8,5 +8,7 @@
 
   <include file="$(find nextage_tutorials)/launch/dual_touch.launch" >
   </include>
-
+  
+  <include file="$(find nextage_tutorials)/launch/jsk_robot_state_publisher.launch" >
+  </include>
 </launch>
