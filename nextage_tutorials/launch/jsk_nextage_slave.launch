@@ -14,6 +14,28 @@
     </node>
   </group>
 
+  <node pkg="nextage_tutorials"
+        type="ft_gravity_compensate.py"
+        name="ft_compensate_left"
+        output="screen">
+    <param name="input_topic"  value="/left_ft/left_ft/force_torque" />
+    <param name="output_topic" value="/left/ft_compensated" />
+    <param name="sensor_frame" value="LARM_JOINT5_Link" />
+    <param name="base_frame"   value="WAIST" />
+    <rosparam file="$(find nextage_tutorials)/config/ft_left.yaml" />
+  </node>
+
+  <node pkg="nextage_tutorials"
+        type="ft_gravity_compensate.py"
+        name="ft_compensate_right"
+        output="screen">
+    <param name="input_topic"  value="/right_ft/right_ft/force_torque" />
+    <param name="output_topic" value="/right/ft_compensated" />
+    <param name="sensor_frame" value="RARM_JOINT5_Link" />
+    <param name="base_frame"   value="WAIST" />
+    <rosparam file="$(find nextage_tutorials)/config/ft_right.yaml" />
+  </node>
+  
   <include file="$(find voicevox)/launch/voicevox_texttospeech.launch">
   </include>
 </launch>
