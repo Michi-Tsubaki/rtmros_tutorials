@@ -102,6 +102,18 @@
       (:rarm (send* (send self :rhand-init) :close-holder args))
       (:arms (send* (send self :lhand-init) :close-holder args)
              (send* (send self :rhand-init) :close-holder args))))
+  (:open-scissors (&optional (arm :arms) &rest args)
+    (case arm
+      (:larm (send* (send self :lhand-init) :open-scissors args))
+      (:rarm (send* (send self :rhand-init) :open-scissors args))
+      (:arms (send* (send self :lhand-init) :open-scissors args)
+             (send* (send self :rhand-init) :open-scissors args))))
+  (:close-scissors (&optional (arm :arms) &rest args)
+    (case arm
+      (:larm (send* (send self :lhand-init) :close-scissors args))
+      (:rarm (send* (send self :rhand-init) :close-scissors args))
+      (:arms (send* (send self :lhand-init) :close-scissors args)
+             (send* (send self :rhand-init) :close-scissors args))))
   )
 
 (defun nextage-init ()
