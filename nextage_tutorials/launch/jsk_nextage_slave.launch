@@ -38,4 +38,7 @@
   
   <include file="$(find voicevox)/launch/voicevox_texttospeech.launch">
   </include>
+
+  <node pkg="dynamixel_detachable_hand" type="monitor_connection.py" 
+        name="dynamixel_error_monitor" output="screen" />
 </launch>
