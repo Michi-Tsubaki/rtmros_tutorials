@@ -1,9 +1,9 @@
 <launch>
   <arg name="node_start_delay" default="2.0" />  
-  <include file="$(find nextage_tutorials)/launch/l515_head.launch" >
+<!--  <include file="$(find nextage_tutorials)/launch/l515_head.launch" >
   </include>
-
-  <include file="$(find nextage_tutorials)/launch/d405_lhand.launch" >
+-->
+  <include file="$(find nextage_tutorials)/launch/lhand_camera.launch" >
   </include>
 
   <include file="$(find nextage_tutorials)/launch/dual_touch.launch" >
