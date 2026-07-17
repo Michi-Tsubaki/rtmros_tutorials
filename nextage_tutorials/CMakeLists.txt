@@ -1,61 +1,53 @@
-cmake_minimum_required(VERSION 3.0.2)
+cmake_minimum_required(VERSION 3.8)
 project(nextage_tutorials)
 
-find_package(catkin REQUIRED
-  nextage_description)
+find_package(ament_cmake REQUIRED)
+find_package(builtin_interfaces REQUIRED)
+find_package(control_msgs REQUIRED)
+find_package(nextage_description QUIET)
+find_package(roseus QUIET)
+find_package(sensor_msgs REQUIRED)
+find_package(trajectory_msgs REQUIRED)
 
-catkin_package()
+find_program(IRTEUSGL_EXECUTABLE irteusgl
+  HINTS "$ENV{EUSDIR}/Linux64/bin")
 
-if(EXISTS ${nextage_description_PREFIX}/share/nextage_description/urdf/NextageOpen.urdf)
-  set(nextage_urdf ${nextage_description_PREFIX}/share/nextage_description/urdf/NextageOpen.urdf)
-elseif(EXISTS ${nextage_description_SOURCE_PREFIX}/urdf/NextageOpen.urdf)
-  set(nextage_urdf ${nextage_description_SOURCE_PREFIX}/urdf/NextageOpen.urdf)
-else()
-  message(WARNING "Could not found nextage.urdf in ${nextage_description_PREFIX}/share/nextage_description/urdf/NextageOpen.urdf nor ${nextage_description_SOURCE_PREFIX}/urdf/NextageOpen.urdf")
+set(NEXTAGE_LISP "${CMAKE_CURRENT_SOURCE_DIR}/nextage.l")
+if(NOT EXISTS "${NEXTAGE_LISP}")
+  message(FATAL_ERROR "Pre-generated NEXTAGE JSKEus model is missing")
 endif()
-if (EXISTS ${nextage_urdf})
-  message(STATUS "Found nextage.urdf at ${nextage_urdf}")
-  add_custom_command(OUTPUT ${PROJECT_SOURCE_DIR}/nextage.l
-    COMMAND rosrun euscollada collada2eus nextage.dae config/nextage.yaml nextage.l
-    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-    DEPENDS nextage.dae config/nextage.yaml)
-  add_custom_command(OUTPUT ${PROJECT_SOURCE_DIR}/nextage.dae
-    COMMAND rosrun collada_urdf urdf_to_collada ${nextage_urdf} nextage.dae
-    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-    DEPENDS ${nextage_urdf})
+install(FILES "${NEXTAGE_LISP}" DESTINATION share/${PROJECT_NAME})
 
-  # get collada-dom version
-  find_package(PkgConfig)
-  pkg_check_modules(COLLADA collada-dom>=2.4.4 )
-  if ( ${COLLADA_FOUND} )
-    add_custom_target(generate_nextage_lisp ALL DEPENDS ${PROJECT_SOURCE_DIR}/nextage.l)
-  else()
-    pkg_check_modules(COLLADA collada-dom)
-    message(WARNING "urdf_to_collada requries collada-dom >= 2.4.4, installed version is ${COLLADA_VERSION}")
-  endif()
-endif()
-
-#############
-## Install ##
-#############
-file(GLOB_RECURSE SCRIPTS_FILES *.py)
-catkin_install_python(
-  PROGRAMS ${SCRIPTS_FILES}
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/scripts
+install(PROGRAMS
+  scripts/ft_gravity_calib.py
+  scripts/ft_gravity_compensate.py
+  DESTINATION lib/${PROJECT_NAME}
 )
-install(DIRECTORY scripts
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+
+install(DIRECTORY config euslisp model sample udev urdf
+  DESTINATION share/${PROJECT_NAME}
   USE_SOURCE_PERMISSIONS
-  PATTERN "*"
-  PATTERN "*/*.py" EXCLUDE
 )
 
-install(DIRECTORY config euslisp launch model sample udev urdf
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-  USE_SOURCE_PERMISSIONS)
+install(DIRECTORY launch/
+  DESTINATION share/${PROJECT_NAME}/launch
+  FILES_MATCHING PATTERN "*.launch.py"
+)
 
-install(FILES nextage.dae nextage.l DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
+if(BUILD_TESTING AND IRTEUSGL_EXECUTABLE)
+  find_package(ament_cmake_test REQUIRED)
+  configure_file(test/test-nextage-ik.l.in
+    "${CMAKE_CURRENT_BINARY_DIR}/test-nextage-ik.l" @ONLY)
+  ament_add_test(nextage_model_ik
+    COMMAND "${IRTEUSGL_EXECUTABLE}"
+            "${CMAKE_CURRENT_BINARY_DIR}/test-nextage-ik.l"
+    GENERATE_RESULT_FOR_RETURN_CODE_ZERO
+    TIMEOUT 60)
+  get_filename_component(EUS_BIN_DIR "${IRTEUSGL_EXECUTABLE}" DIRECTORY)
+  get_filename_component(EUS_ARCH_DIR "${EUS_BIN_DIR}" DIRECTORY)
+  set_tests_properties(nextage_model_ik PROPERTIES
+    ENVIRONMENT
+      "LD_LIBRARY_PATH=${EUS_ARCH_DIR}/lib:$ENV{LD_LIBRARY_PATH}")
+endif()
 
-############
-##  Test  ##
-############
+ament_package()

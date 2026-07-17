@@ -1,5 +1,6 @@
 nextage.dae
 nextage.l
+!model/generated/nextage.l
 launch/ft_sensor_calib.launch
 launch/manual_tf_calib.launch
 scripts/tf_to_imu.py
