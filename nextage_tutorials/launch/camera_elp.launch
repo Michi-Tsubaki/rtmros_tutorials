@@ -10,8 +10,7 @@
     <param name="color_format" value="yuv422p" />
     <param name="create_suspended" value="false" />
     <param name="full_ffmpeg_log" value="false" />
-    <param name="camera_name" value="head_camera" />
-    <param name="camera_frame_id" value="elp_camera" />
+    <param name="camera_name" value="elp_camera" />
     <param name="camera_transport_suffix" value="image_raw" />
     <param name="camera_info_url" value="" />
     <param name="image_width" value="1280" /> <!-- 3840 -->
