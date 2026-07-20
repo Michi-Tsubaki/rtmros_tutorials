@@ -88,7 +88,7 @@
 (defmethod nextage-interface
   (:init (&key ((:robot r) nextageopen-robot)
                ((:controller-action ca)
-                "/fullbody_controller/follow_joint_trajectory")
+                "/fullbody_controller/follow_joint_trajectory_action")
                ((:joint-states-topic jst) "/robot/joint_states")
                ((:publish-joint-states-topic pjst) nil)
                ((:objects objs) nil)
@@ -253,9 +253,11 @@
       duration))
 
   (:make-point (angles tm)
-    (let ((point (instance trajectory_msgs::JointTrajectoryPoint :init)))
+    (let ((point (instance trajectory_msgs::JointTrajectoryPoint :init))
+          (zeros (instantiate float-vector (length angles))))
       (send point :positions
             (map float-vector #'(lambda (degree) (deg2rad degree)) angles))
+      (send point :velocities zeros)
       (send point :time_from_start (send self :make-duration tm))
       point))
 
@@ -339,10 +341,23 @@
               ros::*action-goal-state-succeeded*)
            (= (send result :error_code) 0)))))
 
-(defun nextage-init ()
+(defun nextage-init
+  (&key ((:controller-action ca)
+         "/fullbody_controller/follow_joint_trajectory_action")
+        ((:joint-states-topic jst) "/robot/joint_states")
+        ((:publish-joint-states-topic pjst) nil)
+        ((:objects objs) nil)
+        ((:execution-mode em) :auto)
+        ((:simulation-look-all sim-look-all) t))
   (unless (ros::ok) (ros::roseus "nextage_interface"))
   (unless (boundp '*nextage*)
     (setq *nextage* (instance nextageopen-robot :init)))
-  (unless (boundp '*ri*)
-    (setq *ri* (instance nextage-interface :init :robot *nextage*)))
+  (setq *ri* (instance nextage-interface :init
+                       :robot *nextage*
+                       :controller-action ca
+                       :joint-states-topic jst
+                       :publish-joint-states-topic pjst
+                       :objects objs
+                       :execution-mode em
+                       :simulation-look-all sim-look-all))
   *ri*)
