@@ -12,8 +12,16 @@ find_package(trajectory_msgs REQUIRED)
 find_program(IRTEUSGL_EXECUTABLE irteusgl
   HINTS "$ENV{EUSDIR}/Linux64/bin")
 
-set(NEXTAGE_LISP "${CMAKE_CURRENT_SOURCE_DIR}/nextage.l")
-install(FILES "${NEXTAGE_LISP}" DESTINATION share/${PROJECT_NAME})
+set(NEXTAGE_LISP_FILES)
+foreach(lisp_file nextage.l jsk-nextage.l)
+  if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${lisp_file}")
+    list(APPEND NEXTAGE_LISP_FILES "${CMAKE_CURRENT_SOURCE_DIR}/${lisp_file}")
+  endif()
+endforeach()
+
+if(NEXTAGE_LISP_FILES)
+  install(FILES ${NEXTAGE_LISP_FILES} DESTINATION share/${PROJECT_NAME})
+endif()
 
 install(PROGRAMS
   scripts/ft_gravity_calib.py
@@ -21,7 +29,7 @@ install(PROGRAMS
   DESTINATION lib/${PROJECT_NAME}
 )
 
-install(DIRECTORY config euslisp model sample udev urdf
+install(DIRECTORY config euslisp meshes model sample udev urdf
   DESTINATION share/${PROJECT_NAME}
   USE_SOURCE_PERMISSIONS
 )
