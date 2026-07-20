@@ -2,4 +2,5 @@ nextage.dae
 nextage.l
 launch/ft_sensor_calib.launch
 launch/manual_tf_calib.launch
-scripts/tf_to_imu.py
+config/ft_left.yaml
+config/ft_right.yaml 
