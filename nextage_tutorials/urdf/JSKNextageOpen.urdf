@@ -147,7 +147,7 @@
 			</geometry>
 		</collision>
 	</link>
-	<link name="CHEST_NEXTAGE_TO_L515_Link">
+	<link name="CHEST_NEXTAGE_TO_TOP_CAMERA_Link">
 		<visual>
 			<origin xyz="0 0 0" rpy="0 0 0" />
 			<geometry>
@@ -164,7 +164,7 @@
 			</geometry>
 		</collision>
 	</link>
-	<link name="CHEST_L515_Link">
+	<link name="TOP_CAMERA_Link">
 		<visual>
 			<origin xyz="0 0 0" rpy="0 0 0" />
 			<geometry>
@@ -178,7 +178,7 @@
 			</geometry>
 		</collision>
 	</link>
-	<link name="L515_Link">
+	<link name="top_camera_link">
 		<visual>
 			<origin xyz="0 0 0" rpy="0 0 0" />
 			<geometry>
@@ -515,19 +515,19 @@
 		<dynamics damping="0.200000003" friction="0" />
 		<limit lower="-2.44345999" upper="1.04719996" effort="200" velocity="0.5" />
 	</joint>
-	<joint name="CHEST_JOINT0_TO_NEXTAGE_TO_L515" type="fixed">
+	<joint name="CHEST_JOINT0_TO_NEXTAGE_TO_TOP_CAMERA" type="fixed">
 		<parent link="CHEST_JOINT0_Link" />
-		<child link="CHEST_NEXTAGE_TO_L515_Link" />
+		<child link="CHEST_NEXTAGE_TO_TOP_CAMERA_Link" />
 		<origin xyz="0.080855 0.099197 0.291294" rpy="0.698132 0 -1.570796" />
 	</joint>
-	<joint name="CHEST_NEXTAGE_TO_L515_TO_CHEST_L515" type="fixed">
-		<parent link="CHEST_NEXTAGE_TO_L515_Link" />
-		<child link="CHEST_L515_Link" />
+	<joint name="CHEST_NEXTAGE_TO_TOP_CAMERA_TO_TOP_CAMERA" type="fixed">
+		<parent link="CHEST_NEXTAGE_TO_TOP_CAMERA_Link" />
+		<child link="TOP_CAMERA_Link" />
 		<origin xyz="0.099197 0.069502 0.025" rpy="-1.570796 1.570796 0" />
 	</joint>
-	<joint name="CHEST_L515_TO_L515" type="fixed">
-		<parent link="CHEST_L515_Link" />
-		<child link="L515_Link" />
+	<joint name="TOP_CAMERA_TO_TOP_CAMERA" type="fixed">
+		<parent link="TOP_CAMERA_Link" />
+		<child link="top_camera_link" />
 		<origin xyz="0 0 0" rpy="0 0 0" />
 	</joint>
 	<joint name="LARM_JOINT2" type="revolute">
