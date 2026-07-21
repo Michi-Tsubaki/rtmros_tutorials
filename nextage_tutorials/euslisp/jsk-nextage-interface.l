@@ -8,27 +8,27 @@
 
 (defclass nextage-interface
   :super robot-interface
-  :slots ())
+  :slots (on-gazebo-ros-control))
 
 (defmethod nextage-interface
-  (:init (&rest args)
-         (send-super :init :robot nextageopen-robot)
+  (:init (&rest args &key (type nil) &allow-other-keys)
     (setq on-gazebo-ros-control
           (and (ros::get-param "/gazebo/time_step" nil)
                ;; rtm-ros-bridge does not have type parametrs
                (ros::get-param "/torso_controller/type" nil)))
     (when on-gazebo-ros-control
       (ros::ros-warn "Found Gazebo/ros_control environment"))
-    )
-  (when on-gazebo-ros-control  
-    (:default-controller ()
-			 (append
-			  (send self :larm-controller)
-			  (send self :rarm-controller)
-			  (send self :torso-controller)
-			  (send self :head-controller))
-			 )
-    )
+    (send-super* :init :robot nextageopen-robot :type
+                 (cond (type type)
+                       (on-gazebo-ros-control :gazebo-ros-controller)
+                       (t :default-controller))
+                 args))
+  (:gazebo-ros-controller ()
+   (append
+    (send self :larm-controller)
+    (send self :rarm-controller)
+    (send self :torso-controller)
+    (send self :head-controller)))
   (:larm-controller ()
    (list
     (list
