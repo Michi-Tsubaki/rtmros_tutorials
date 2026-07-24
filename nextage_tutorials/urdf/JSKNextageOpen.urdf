@@ -459,6 +459,40 @@
 			</geometry>
 		</collision>
 	</link>
+	<link name="LARM_CAMERA_Link">
+		<visual>
+			<origin xyz="0 0 0" rpy="0 0 0" />
+			<geometry>
+				<box size="0.025 0.025 0.025" />
+			</geometry>
+			<material name="LARM_CAMERA_BLACK">
+				<color rgba="0.02 0.02 0.02 1.0" />
+			</material>
+		</visual>
+		<collision>
+			<origin xyz="0 0 0" rpy="0 0 0" />
+			<geometry>
+				<box size="0.025 0.025 0.025" />
+			</geometry>
+		</collision>
+	</link>
+	<link name="RARM_CAMERA_Link">
+		<visual>
+			<origin xyz="0 0 0" rpy="0 0 0" />
+			<geometry>
+				<box size="0.025 0.025 0.025" />
+			</geometry>
+			<material name="RARM_CAMERA_BLACK">
+				<color rgba="0.02 0.02 0.02 1.0" />
+			</material>
+		</visual>
+		<collision>
+			<origin xyz="0 0 0" rpy="0 0 0" />
+			<geometry>
+				<box size="0.025 0.025 0.025" />
+			</geometry>
+		</collision>
+	</link>
 	<joint name="CHEST_JOINT0" type="revolute">
 		<parent link="WAIST" />
 		<child link="CHEST_JOINT0_Link" />
@@ -633,5 +667,15 @@
 		<parent link="RARM_FTSENSOR_Link" />
 		<child link="RARM_NEJINEJI_Link" />
 		<origin xyz="0.03634 -0.03631 -0.01197" rpy="-1.570796 0 1.570796" />
+	</joint>
+	<joint name="LARM_CAMERA_Joint" type="fixed">
+		<parent link="LARM_JOINT5_Link" />
+		<child link="LARM_CAMERA_Link" />
+		<origin xyz="0.02 0.045 -0.03" rpy="1.21300383 0 1.881464934" />
+	</joint>
+	<joint name="RARM_CAMERA_Joint" type="fixed">
+		<parent link="RARM_JOINT5_Link" />
+		<child link="RARM_CAMERA_Link" />
+		<origin xyz="0.02 -0.045 -0.03" rpy="1.21300383 0 1.26012772" />
 	</joint>
 </robot>
