@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.8)
 project(nextage_tutorials)
 
 find_package(ament_cmake REQUIRED)
+find_package(ament_cmake_python REQUIRED)
 find_package(builtin_interfaces REQUIRED)
 find_package(control_msgs REQUIRED)
 find_package(nextage_description QUIET)
@@ -19,6 +20,8 @@ foreach(lisp_file nextage.l jsk-nextage.l)
   endif()
 endforeach()
 
+ament_python_install_package(${PROJECT_NAME} PACKAGE_DIR src/${PROJECT_NAME})
+
 if(NEXTAGE_LISP_FILES)
   install(FILES ${NEXTAGE_LISP_FILES} DESTINATION share/${PROJECT_NAME})
 endif()
@@ -26,6 +29,7 @@ endif()
 install(PROGRAMS
   scripts/ft_gravity_calib.py
   scripts/ft_gravity_compensate.py
+  scripts/viser_teleope.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
@@ -36,7 +40,10 @@ install(DIRECTORY config euslisp meshes model sample udev urdf
 
 install(DIRECTORY launch/
   DESTINATION share/${PROJECT_NAME}/launch
-  FILES_MATCHING PATTERN "*.launch.py"
+  FILES_MATCHING
+    PATTERN "*.launch"
+    PATTERN "*.launch.py"
+    PATTERN "*.launch.xml"
 )
 
 

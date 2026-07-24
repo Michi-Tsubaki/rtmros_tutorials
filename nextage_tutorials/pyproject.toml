@@ -1,0 +1,36 @@
+[project]
+name = "nextage-tutorials-runtime"
+version = "0.1.0"
+description = "ROS 2 tutorials and utilities for the NEXTAGE OPEN robot."
+requires-python = ">=3.10"
+license = { text = "BSD" }
+authors = [
+    { name = "Kei Okada", email = "k-okada@jsk.t.u-tokyo.ac.jp" },
+]
+maintainers = [
+    { name = "Michitoshi Tsubaki", email = "tsubaki@jsk.t.u-tokyo.ac.jp" },
+]
+keywords = ["NEXTAGE OPEN", "ROS 2", "robotics", "tutorials"]
+dependencies = [
+    "numpy<2",
+    "scikit-robot",
+]
+
+[project.urls]
+Homepage = "https://github.com/Michi-Tsubaki/rtmros_tutorials"
+Repository = "https://github.com/Michi-Tsubaki/rtmros_tutorials"
+Issues = "https://github.com/Michi-Tsubaki/rtmros_tutorials/issues"
+
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[tool.uv.sources]
+scikit-robot = { path = "src/scikit-robot", editable = true }
+
+[tool.setuptools.package-dir]
+"" = "src"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["nextage_tutorials*"]
