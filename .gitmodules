@@ -1,3 +1,7 @@
 [submodule ".travis"]
 	path = .travis
 	url = https://github.com/jsk-ros-pkg/jsk_travis.git
+[submodule "nextage_tutorials/src/scikit-robot"]
+	path = nextage_tutorials/src/scikit-robot
+	url = https://github.com/Michi-Tsubaki/scikit-robot.git
+	branch = ros2-nextage
