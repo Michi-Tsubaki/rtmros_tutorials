@@ -33,7 +33,6 @@ install(PROGRAMS
   scripts/ft_gravity_compensate.py
   scripts/gripper_joint_state_publisher.py
   scripts/viser_teleope.py
-  scripts/nextage_topic_bridge.sh
   DESTINATION lib/${PROJECT_NAME}
 )
 
