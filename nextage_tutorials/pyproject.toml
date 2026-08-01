@@ -1,12 +1,9 @@
 [project]
-name = "nextage-tutorials-runtime"
+name = "nextage-tutorials"
 version = "0.1.0"
 description = "ROS 2 tutorials and utilities for the NEXTAGE OPEN robot."
 requires-python = ">=3.10"
 license = { text = "BSD" }
-authors = [
-    { name = "Kei Okada", email = "k-okada@jsk.t.u-tokyo.ac.jp" },
-]
 maintainers = [
     { name = "Michitoshi Tsubaki", email = "tsubaki@jsk.t.u-tokyo.ac.jp" },
 ]

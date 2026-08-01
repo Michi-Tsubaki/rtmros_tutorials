@@ -5,7 +5,9 @@ find_package(ament_cmake REQUIRED)
 find_package(ament_cmake_python REQUIRED)
 find_package(builtin_interfaces REQUIRED)
 find_package(control_msgs REQUIRED)
+find_package(geometry_msgs REQUIRED)
 find_package(nextage_description QUIET)
+find_package(rclcpp REQUIRED)
 find_package(roseus QUIET)
 find_package(sensor_msgs REQUIRED)
 find_package(trajectory_msgs REQUIRED)
@@ -14,7 +16,7 @@ find_program(IRTEUSGL_EXECUTABLE irteusgl
   HINTS "$ENV{EUSDIR}/Linux64/bin")
 
 set(NEXTAGE_LISP_FILES)
-foreach(lisp_file nextage.l jsk-nextage.l)
+foreach(lisp_file nextage.l jsk-nextage.l jsk-nextage-grippers.l)
   if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${lisp_file}")
     list(APPEND NEXTAGE_LISP_FILES "${CMAKE_CURRENT_SOURCE_DIR}/${lisp_file}")
   endif()
@@ -29,7 +31,9 @@ endif()
 install(PROGRAMS
   scripts/ft_gravity_calib.py
   scripts/ft_gravity_compensate.py
+  scripts/gripper_joint_state_publisher.py
   scripts/viser_teleope.py
+  scripts/nextage_topic_bridge.sh
   DESTINATION lib/${PROJECT_NAME}
 )
 
@@ -45,6 +49,5 @@ install(DIRECTORY launch/
     PATTERN "*.launch.py"
     PATTERN "*.launch.xml"
 )
-
 
 ament_package()
