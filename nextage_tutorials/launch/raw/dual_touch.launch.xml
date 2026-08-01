@@ -1,0 +1,37 @@
+<launch>
+  <arg name="right_namespace" default="right"/>
+  <arg name="left_namespace" default="left"/>
+  <arg name="right_device_name" default="Right Device"/>
+  <arg name="left_device_name" default="Left Device"/>
+  <arg name="right_reference_frame" default="touch_base"/>
+  <arg name="left_reference_frame" default="touch_base"/>
+  <arg name="units" default="mm"/>
+  <arg name="publish_rate" default="1000"/>
+  <arg name="right_start_delay" default="2.0"/>
+
+  <!-- Split the two devices into separate namespaces to avoid topic/name collisions. -->
+  <group>
+    <push-ros-namespace namespace="$(var left_namespace)"/>
+    <include file="$(find-pkg-share touch_common)/launch/touch.launch.py">
+      <arg name="device_name" value="$(var left_device_name)"/>
+      <arg name="reference_frame" value="$(var left_reference_frame)"/>
+      <arg name="units" value="$(var units)"/>
+      <arg name="publish_rate" value="$(var publish_rate)"/>
+      <arg name="launch_rviz" value="false"/>
+    </include>
+  </group>
+
+  <!-- OpenHaptics multi-device initialization is sensitive to simultaneous startup. -->
+  <timer period="$(var right_start_delay)">
+    <group>
+      <push-ros-namespace namespace="$(var right_namespace)"/>
+      <include file="$(find-pkg-share touch_common)/launch/touch.launch.py">
+        <arg name="device_name" value="$(var right_device_name)"/>
+        <arg name="reference_frame" value="$(var right_reference_frame)"/>
+        <arg name="units" value="$(var units)"/>
+        <arg name="publish_rate" value="$(var publish_rate)"/>
+        <arg name="launch_rviz" value="false"/>
+      </include>
+    </group>
+  </timer>
+</launch>

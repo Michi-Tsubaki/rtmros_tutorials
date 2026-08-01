@@ -1,0 +1,26 @@
+topics:
+  -
+    topic: /joint_states
+    type: sensor_msgs/msg/JointState
+    queue_size: 10
+  -
+    topic: /robot_description
+    type: std_msgs/msg/String
+    queue_size: 1
+    qos:
+      history: keep_last
+      depth: 1
+      durability: transient_local
+  -
+    topic: /tf
+    type: tf2_msgs/msg/TFMessage
+    queue_size: 100
+  -
+    topic: /tf_static
+    type: tf2_msgs/msg/TFMessage
+    queue_size: 100
+    qos:
+      history: keep_all
+      durability: transient_local
+services_1_to_2: []
+services_2_to_1: []

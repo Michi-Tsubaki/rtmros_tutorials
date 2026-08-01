@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="model" default="$(find-pkg-share nextage_tutorials)/urdf/JSKNextageOpenGripper.urdf"/>
+  <arg name="use_sim_time" default="false"/>
+  <arg name="publish_gripper_joint_states" default="true"/>
+  <arg name="gripper_joint_state_rate" default="10.0"/>
+  <arg name="gripper_position" default="0.05"/>
+
+  <node pkg="robot_state_publisher" exec="robot_state_publisher" name="robot_state_publisher" output="screen">
+    <param name="robot_description" value="$(command 'xacro $(var model)')"/>
+    <param name="use_sim_time" value="$(var use_sim_time)"/>
+  </node>
+
+  <node
+    pkg="nextage_tutorials"
+    exec="gripper_joint_state_publisher.py"
+    name="gripper_joint_state_publisher"
+    output="screen"
+    if="$(var publish_gripper_joint_states)">
+    <param name="use_sim_time" value="$(var use_sim_time)"/>
+    <param name="left_position" value="$(var gripper_position)"/>
+    <param name="right_position" value="$(var gripper_position)"/>
+    <param name="publish_rate" value="$(var gripper_joint_state_rate)"/>
+  </node>
+</launch>

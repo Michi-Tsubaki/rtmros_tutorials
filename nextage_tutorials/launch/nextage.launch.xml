@@ -6,21 +6,36 @@
   <arg name="left_comport" default="/dev/left_ft_sensor"/>
   <arg name="right_namespace" default="right_ft"/>
   <arg name="left_namespace" default="left_ft"/>
-  <arg name="right_frame_id" default="right_ft_sensor"/>
-  <arg name="left_frame_id" default="left_ft_sensor"/>
+  <arg name="right_frame_id" default="RARM_FTSENSOR_SENSOR_Link"/>
+  <arg name="left_frame_id" default="LARM_FTSENSOR_SENSOR_Link"/>
 
-  <arg name="camera_namespace" default="camera"/>
-  <arg name="camera_name" default="l515"/>
-  <arg name="serial_no" default="''"/>
-  <arg name="usb_port_id" default="''"/>
+  <arg name="camera_namespace" default="top_camera"/>
+  <arg name="camera_name" default="top_camera"/>
+  <arg name="serial_no" default="f0233276"/>
+  <arg name="usb_port_id" default=""/>
   <arg name="initial_reset" default="false"/>
   <arg name="enable_pointcloud" default="true"/>
+  <arg name="enable_infra" default="false"/>
+  <arg name="enable_confidence" default="false"/>
   <arg name="enable_rgbd" default="false"/>
   <arg name="align_depth" default="true"/>
   <arg name="publish_tf" default="true"/>
+  <arg name="tf_publish_rate" default="0"/>
+  <arg name="base_frame_id" default="link"/>
   <arg name="tf_prefix" default=""/>
+  <arg name="use_sim_time" default="false"/>
+  <arg name="publish_gripper_joint_states" default="true"/>
+  <arg name="gripper_joint_state_rate" default="10.0"/>
+  <arg name="gripper_position" default="0.05"/>
 
-  <include file="$(find-pkg-share nextage_tutorials)/launch/leptrino_force_torque.launch.xml">
+  <include file="$(find-pkg-share nextage_tutorials)/launch/raw/jsk_robot_state_publisher.launch.xml">
+    <arg name="use_sim_time" value="$(var use_sim_time)"/>
+    <arg name="publish_gripper_joint_states" value="$(var publish_gripper_joint_states)"/>
+    <arg name="gripper_joint_state_rate" value="$(var gripper_joint_state_rate)"/>
+    <arg name="gripper_position" value="$(var gripper_position)"/>
+  </include>
+
+  <include file="$(find-pkg-share nextage_tutorials)/launch/raw/leptrino_force_torque.launch.xml">
     <arg name="right_comport" value="$(var right_comport)"/>
     <arg name="left_comport" value="$(var left_comport)"/>
     <arg name="right_namespace" value="$(var right_namespace)"/>
@@ -29,21 +44,29 @@
     <arg name="left_frame_id" value="$(var left_frame_id)"/>
   </include>
 
-  <include file="$(find-pkg-share nextage_tutorials)/launch/realsense_l515.launch.xml">
+  <include file="$(find-pkg-share nextage_tutorials)/launch/raw/top_camera.launch.xml">
     <arg name="camera_namespace" value="$(var camera_namespace)"/>
     <arg name="camera_name" value="$(var camera_name)"/>
     <arg name="serial_no" value="$(var serial_no)"/>
     <arg name="usb_port_id" value="$(var usb_port_id)"/>
     <arg name="initial_reset" value="$(var initial_reset)"/>
     <arg name="enable_pointcloud" value="$(var enable_pointcloud)"/>
-    <arg name="enable_rgbd" value="$(var enable_rgbd)"/>
+    <arg name="enable_infra" value="$(var enable_infra)"/>
+    <arg name="enable_confidence" value="$(var enable_confidence)"/>
     <arg name="align_depth" value="$(var align_depth)"/>
     <arg name="publish_tf" value="$(var publish_tf)"/>
-    <arg name="tf_prefix" value="$(var tf_prefix)"/>
+    <arg name="tf_publish_rate" value="$(var tf_publish_rate)"/>
+    <arg name="base_frame_id" value="$(var base_frame_id)"/>
     <arg name="log_level" value="$(var log_level)"/>
   </include>
 
-  <include file="$(find-pkg-share nextage_tutorials)/launch/nextage_ros1bridge.launch.xml">
+  <include file="$(find-pkg-share nextage_tutorials)/launch/raw/task_elp.launch.xml">
+    <arg name="log_level" value="$(var log_level)"/>
+  </include>
+
+  <include file="$(find-pkg-share nextage_tutorials)/launch/raw/dual_touch.launch.xml"/>
+
+  <include file="$(find-pkg-share nextage_tutorials)/launch/raw/jsk-nextage-rviz.launch.xml">
     <arg name="log_level" value="$(var log_level)"/>
   </include>
 </launch>

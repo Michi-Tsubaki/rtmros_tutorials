@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="log_level" default="info"/>
+  <arg name="rviz_config" default="$(find-pkg-share nextage_tutorials)/config/jsk-nextage.rviz"/>
+
+  <node
+    pkg="rviz2"
+    exec="rviz2"
+    name="rviz2"
+    output="screen"
+    args="-d $(var rviz_config) --ros-args --log-level $(var log_level)"/>
+</launch>

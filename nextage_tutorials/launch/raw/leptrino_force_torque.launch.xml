@@ -4,8 +4,8 @@
   <arg name="left_comport" default="/dev/left_ft_sensor"/>
   <arg name="right_namespace" default="right_ft"/>
   <arg name="left_namespace" default="left_ft"/>
-  <arg name="right_frame_id" default="right_ft_sensor"/>
-  <arg name="left_frame_id" default="left_ft_sensor"/>
+  <arg name="right_frame_id" default="RARM_FTSENSOR_SENSOR_Link"/>
+  <arg name="left_frame_id" default="LARM_FTSENSOR_SENSOR_Link"/>
 
   <include file="$(find-pkg-share leptrino_force_torque)/launch/leptrino.launch.xml">
     <arg name="comport" value="$(var right_comport)"/>

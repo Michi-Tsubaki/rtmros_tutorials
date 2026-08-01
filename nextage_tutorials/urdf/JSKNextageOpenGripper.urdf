@@ -427,6 +427,8 @@
       </geometry>
     </collision>
   </link>
+  <link name="LARM_FTSENSOR_SENSOR_Link" />
+  <link name="RARM_FTSENSOR_SENSOR_Link" />
   <link name="LARM_NEJINEJI_Link">
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
@@ -564,7 +566,7 @@
   <joint name="TOP_CAMERA_TO_TOP_CAMERA" type="fixed">
     <parent link="TOP_CAMERA_Link" />
     <child link="top_camera_link" />
-    <origin xyz="0 0 0" rpy="1.570796 0 0" />
+    <origin xyz="0 0 0" rpy="0 0 0" />
   </joint>
   <joint name="LARM_JOINT2" type="revolute">
     <parent link="LARM_JOINT1_Link" />
@@ -650,6 +652,11 @@
     <child link="LARM_NEJINEJI_Link" />
     <origin xyz="-0.03634 0.03631 -0.01197" rpy="-1.570796 0 -1.570796" />
   </joint>
+  <joint name="LARM_FTSENSOR_TO_FTSENSOR_SENSOR" type="fixed">
+    <parent link="LARM_FTSENSOR_Link" />
+    <child link="LARM_FTSENSOR_SENSOR_Link" />
+    <origin xyz="0 0 0" rpy="0 3.141593 0" />
+  </joint>
   <joint name="RARM_JOINT5_TO_FTSENSOR_SPACER" type="fixed">
     <parent link="RARM_JOINT5_Link" />
     <child link="RARM_FTSENSOR_SPACER_Link" />
@@ -670,6 +677,11 @@
     <child link="RARM_NEJINEJI_Link" />
     <origin xyz="0.03634 -0.03631 -0.01197" rpy="-1.570796 0 1.570796" />
   </joint>
+  <joint name="RARM_FTSENSOR_TO_FTSENSOR_SENSOR" type="fixed">
+    <parent link="RARM_FTSENSOR_Link" />
+    <child link="RARM_FTSENSOR_SENSOR_Link" />
+    <origin xyz="0 0 0" rpy="0 3.141593 0" />
+  </joint>
   <joint name="LARM_CAMERA_Joint" type="fixed">
     <parent link="LARM_JOINT5_Link" />
     <child link="LARM_CAMERA_Link" />
@@ -684,13 +696,13 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="../../../../jsk-ros-pkg/jsk_robot/jsk_hand/dynamixel_detachable_hand/meshes/nejineji_finger_module/XL_XC_330_1_2.dae" />
+        <mesh filename="package://dynamixel_detachable_hand/meshes/nejineji_finger_module/XL_XC_330_1_2.dae" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="../../../../jsk-ros-pkg/jsk_robot/jsk_hand/dynamixel_detachable_hand/meshes/nejineji_finger_module/XL_XC_330_1_2.stl" />
+        <mesh filename="package://dynamixel_detachable_hand/meshes/nejineji_finger_module/XL_XC_330_1_2.stl" />
       </geometry>
     </collision>
     <inertial>
@@ -703,13 +715,13 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="../../../../jsk-ros-pkg/jsk_robot/jsk_hand/dynamixel_detachable_hand/meshes/nejineji_finger_module/buttom_spacer3300A_1.dae" />
+        <mesh filename="package://dynamixel_detachable_hand/meshes/nejineji_finger_module/buttom_spacer3300A_1.dae" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="../../../../jsk-ros-pkg/jsk_robot/jsk_hand/dynamixel_detachable_hand/meshes/nejineji_finger_module/buttom_spacer3300A_1.stl" />
+        <mesh filename="package://dynamixel_detachable_hand/meshes/nejineji_finger_module/buttom_spacer3300A_1.stl" />
       </geometry>
     </collision>
     <inertial>
@@ -722,13 +734,13 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="../../../../jsk-ros-pkg/jsk_robot/jsk_hand/dynamixel_detachable_hand/meshes/nejineji_finger_module/finger_11.dae" />
+        <mesh filename="package://dynamixel_detachable_hand/meshes/nejineji_finger_module/finger_11.dae" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="../../../../jsk-ros-pkg/jsk_robot/jsk_hand/dynamixel_detachable_hand/meshes/nejineji_finger_module/finger_11.stl" />
+        <mesh filename="package://dynamixel_detachable_hand/meshes/nejineji_finger_module/finger_11.stl" />
       </geometry>
     </collision>
     <inertial>
@@ -741,13 +753,13 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="../../../../jsk-ros-pkg/jsk_robot/jsk_hand/dynamixel_detachable_hand/meshes/nejineji_finger_module/finger_11_2.dae" />
+        <mesh filename="package://dynamixel_detachable_hand/meshes/nejineji_finger_module/finger_11_2.dae" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="../../../../jsk-ros-pkg/jsk_robot/jsk_hand/dynamixel_detachable_hand/meshes/nejineji_finger_module/finger_11_2.stl" />
+        <mesh filename="package://dynamixel_detachable_hand/meshes/nejineji_finger_module/finger_11_2.stl" />
       </geometry>
     </collision>
     <inertial>
@@ -760,13 +772,13 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="../../../../jsk-ros-pkg/jsk_robot/jsk_hand/dynamixel_detachable_hand/meshes/nejineji_finger_module/pinion_1.dae" />
+        <mesh filename="package://dynamixel_detachable_hand/meshes/nejineji_finger_module/pinion_1.dae" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="../../../../jsk-ros-pkg/jsk_robot/jsk_hand/dynamixel_detachable_hand/meshes/nejineji_finger_module/pinion_1.stl" />
+        <mesh filename="package://dynamixel_detachable_hand/meshes/nejineji_finger_module/pinion_1.stl" />
       </geometry>
     </collision>
     <inertial>
@@ -779,13 +791,13 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="../../../../jsk-ros-pkg/jsk_robot/jsk_hand/dynamixel_detachable_hand/meshes/nejineji_finger_module/screwlock_male_1.dae" />
+        <mesh filename="package://dynamixel_detachable_hand/meshes/nejineji_finger_module/screwlock_male_1.dae" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="../../../../jsk-ros-pkg/jsk_robot/jsk_hand/dynamixel_detachable_hand/meshes/nejineji_finger_module/screwlock_male_1.stl" />
+        <mesh filename="package://dynamixel_detachable_hand/meshes/nejineji_finger_module/screwlock_male_1.stl" />
       </geometry>
     </collision>
     <inertial>
@@ -798,13 +810,13 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="../../../../jsk-ros-pkg/jsk_robot/jsk_hand/dynamixel_detachable_hand/meshes/nejineji_finger_module/servo_and_case_simple_1.dae" />
+        <mesh filename="package://dynamixel_detachable_hand/meshes/nejineji_finger_module/servo_and_case_simple_1.dae" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="../../../../jsk-ros-pkg/jsk_robot/jsk_hand/dynamixel_detachable_hand/meshes/nejineji_finger_module/servo_and_case_simple_1.stl" />
+        <mesh filename="package://dynamixel_detachable_hand/meshes/nejineji_finger_module/servo_and_case_simple_1.stl" />
       </geometry>
     </collision>
     <inertial>
@@ -817,13 +829,13 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="../../../../jsk-ros-pkg/jsk_robot/jsk_hand/dynamixel_detachable_hand/meshes/nejineji_finger_module/small_diameter_hornB_1.dae" />
+        <mesh filename="package://dynamixel_detachable_hand/meshes/nejineji_finger_module/small_diameter_hornB_1.dae" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="../../../../jsk-ros-pkg/jsk_robot/jsk_hand/dynamixel_detachable_hand/meshes/nejineji_finger_module/small_diameter_hornB_1.stl" />
+        <mesh filename="package://dynamixel_detachable_hand/meshes/nejineji_finger_module/small_diameter_hornB_1.stl" />
       </geometry>
     </collision>
     <inertial>
@@ -898,13 +910,13 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="../../../../jsk-ros-pkg/jsk_robot/jsk_hand/dynamixel_detachable_hand/meshes/nejineji_finger_module/XL_XC_330_1_2.dae" />
+        <mesh filename="package://dynamixel_detachable_hand/meshes/nejineji_finger_module/XL_XC_330_1_2.dae" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="../../../../jsk-ros-pkg/jsk_robot/jsk_hand/dynamixel_detachable_hand/meshes/nejineji_finger_module/XL_XC_330_1_2.stl" />
+        <mesh filename="package://dynamixel_detachable_hand/meshes/nejineji_finger_module/XL_XC_330_1_2.stl" />
       </geometry>
     </collision>
     <inertial>
@@ -917,13 +929,13 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="../../../../jsk-ros-pkg/jsk_robot/jsk_hand/dynamixel_detachable_hand/meshes/nejineji_finger_module/buttom_spacer3300A_1.dae" />
+        <mesh filename="package://dynamixel_detachable_hand/meshes/nejineji_finger_module/buttom_spacer3300A_1.dae" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="../../../../jsk-ros-pkg/jsk_robot/jsk_hand/dynamixel_detachable_hand/meshes/nejineji_finger_module/buttom_spacer3300A_1.stl" />
+        <mesh filename="package://dynamixel_detachable_hand/meshes/nejineji_finger_module/buttom_spacer3300A_1.stl" />
       </geometry>
     </collision>
     <inertial>
@@ -936,13 +948,13 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="../../../../jsk-ros-pkg/jsk_robot/jsk_hand/dynamixel_detachable_hand/meshes/nejineji_finger_module/finger_11.dae" />
+        <mesh filename="package://dynamixel_detachable_hand/meshes/nejineji_finger_module/finger_11.dae" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="../../../../jsk-ros-pkg/jsk_robot/jsk_hand/dynamixel_detachable_hand/meshes/nejineji_finger_module/finger_11.stl" />
+        <mesh filename="package://dynamixel_detachable_hand/meshes/nejineji_finger_module/finger_11.stl" />
       </geometry>
     </collision>
     <inertial>
@@ -955,13 +967,13 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="../../../../jsk-ros-pkg/jsk_robot/jsk_hand/dynamixel_detachable_hand/meshes/nejineji_finger_module/finger_11_2.dae" />
+        <mesh filename="package://dynamixel_detachable_hand/meshes/nejineji_finger_module/finger_11_2.dae" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="../../../../jsk-ros-pkg/jsk_robot/jsk_hand/dynamixel_detachable_hand/meshes/nejineji_finger_module/finger_11_2.stl" />
+        <mesh filename="package://dynamixel_detachable_hand/meshes/nejineji_finger_module/finger_11_2.stl" />
       </geometry>
     </collision>
     <inertial>
@@ -974,13 +986,13 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="../../../../jsk-ros-pkg/jsk_robot/jsk_hand/dynamixel_detachable_hand/meshes/nejineji_finger_module/pinion_1.dae" />
+        <mesh filename="package://dynamixel_detachable_hand/meshes/nejineji_finger_module/pinion_1.dae" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="../../../../jsk-ros-pkg/jsk_robot/jsk_hand/dynamixel_detachable_hand/meshes/nejineji_finger_module/pinion_1.stl" />
+        <mesh filename="package://dynamixel_detachable_hand/meshes/nejineji_finger_module/pinion_1.stl" />
       </geometry>
     </collision>
     <inertial>
@@ -993,13 +1005,13 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="../../../../jsk-ros-pkg/jsk_robot/jsk_hand/dynamixel_detachable_hand/meshes/nejineji_finger_module/screwlock_male_1.dae" />
+        <mesh filename="package://dynamixel_detachable_hand/meshes/nejineji_finger_module/screwlock_male_1.dae" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="../../../../jsk-ros-pkg/jsk_robot/jsk_hand/dynamixel_detachable_hand/meshes/nejineji_finger_module/screwlock_male_1.stl" />
+        <mesh filename="package://dynamixel_detachable_hand/meshes/nejineji_finger_module/screwlock_male_1.stl" />
       </geometry>
     </collision>
     <inertial>
@@ -1012,13 +1024,13 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="../../../../jsk-ros-pkg/jsk_robot/jsk_hand/dynamixel_detachable_hand/meshes/nejineji_finger_module/servo_and_case_simple_1.dae" />
+        <mesh filename="package://dynamixel_detachable_hand/meshes/nejineji_finger_module/servo_and_case_simple_1.dae" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="../../../../jsk-ros-pkg/jsk_robot/jsk_hand/dynamixel_detachable_hand/meshes/nejineji_finger_module/servo_and_case_simple_1.stl" />
+        <mesh filename="package://dynamixel_detachable_hand/meshes/nejineji_finger_module/servo_and_case_simple_1.stl" />
       </geometry>
     </collision>
     <inertial>
@@ -1031,13 +1043,13 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="../../../../jsk-ros-pkg/jsk_robot/jsk_hand/dynamixel_detachable_hand/meshes/nejineji_finger_module/small_diameter_hornB_1.dae" />
+        <mesh filename="package://dynamixel_detachable_hand/meshes/nejineji_finger_module/small_diameter_hornB_1.dae" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="../../../../jsk-ros-pkg/jsk_robot/jsk_hand/dynamixel_detachable_hand/meshes/nejineji_finger_module/small_diameter_hornB_1.stl" />
+        <mesh filename="package://dynamixel_detachable_hand/meshes/nejineji_finger_module/small_diameter_hornB_1.stl" />
       </geometry>
     </collision>
     <inertial>

@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="log_level" default="info"/>
+
+  <!--
+    dynamic_bridge auto-discovers and bridges the controllers' actions. ROS 2
+    exposes them as actions (e.g. control_msgs/action/FollowJointTrajectory)
+    while ROS 1 exposes the same underlying interface via actionlib
+    (control_msgs/FollowJointTrajectory); the bridge translates between the
+    two automatically, no extra config needed. Give the ROS 1 side an
+    explicit node name so it does not collide with parameter_bridge's default
+    /ros_bridge name.
+
+    Do not add the bridge-all-topics option here. That forces subscriptions to camera
+    image_transport topics and can trigger compressed/depthcompressed
+    publishers in realsense2_camera.
+  -->
+  <node
+    pkg="ros1_bridge"
+    exec="dynamic_bridge"
+    name="nextage_dynamic_bridge"
+    output="screen"
+    args="__name:=nextage_dynamic_bridge --ros-args --log-level $(var log_level)"/>
+
+  <!--
+    Explicit topic allow-list (joint_states, robot_description, tf, tf_static),
+    loaded onto the ROS1 parameter server before starting parameter_bridge.
+    Camera topics are intentionally absent from this file. Bridge config comes
+    from the ROS 1 param server; the wrapper only passes a ROS 1 node-name
+    remap so parameter_bridge does not collide with dynamic_bridge.
+  -->
+  <executable
+    cmd="ros2 run nextage_tutorials nextage_topic_bridge.sh $(find-pkg-share nextage_tutorials)/config/nextage_ros1bridge_topics.yaml nextage_parameter_bridge"
+    output="screen"
+    name="nextage_topic_bridge"/>
+</launch>

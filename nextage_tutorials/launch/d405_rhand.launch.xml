@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <launch>
-  <arg name="camera_namespace" default="lhand_camera"/>
-  <arg name="camera_name" default="lhand_camera"/>
+  <arg name="camera_namespace" default="rhand_camera"/>
+  <arg name="camera_name" default="rhand_camera"/>
   <arg name="serial_no" default="230322275554"/>
   <arg name="usb_port_id" default=""/>
   <arg name="json_file_path" default=""/>
@@ -18,7 +18,7 @@
   <arg name="align_depth" default="true"/>
   <arg name="publish_tf" default="true"/>
   <arg name="tf_publish_rate" default="0"/>
-  <arg name="base_frame_id" default="LARM_CAMERA_Link"/>
+  <arg name="base_frame_id" default="RARM_CAMERA_Link"/>
   <arg name="tf_prefix" default=""/>
   <arg name="log_level" default="info"/>
 
