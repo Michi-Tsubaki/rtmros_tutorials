@@ -2,7 +2,7 @@
 name = "nextage-tutorials"
 version = "0.1.0"
 description = "ROS 2 tutorials and utilities for the NEXTAGE OPEN robot."
-requires-python = ">=3.10"
+requires-python = ">=3.12,<3.13"
 license = { text = "BSD" }
 maintainers = [
     { name = "Michitoshi Tsubaki", email = "tsubaki@jsk.t.u-tokyo.ac.jp" },
