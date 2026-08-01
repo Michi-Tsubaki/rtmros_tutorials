@@ -44,8 +44,6 @@ install(DIRECTORY config euslisp meshes model sample udev urdf
 install(DIRECTORY launch/
   DESTINATION share/${PROJECT_NAME}/launch
   FILES_MATCHING
-    PATTERN "*.launch"
-    PATTERN "*.launch.py"
     PATTERN "*.launch.xml"
 )
 

@@ -84,4 +84,9 @@
     <param name="base_frame_id" type="str" value="$(var base_frame_id)"/>
     <param name="tf_prefix" type="str" value="$(var tf_prefix)"/>
   </node>
+
+  <!-- realsense-ros-l515 prefixes base_frame_id with camera_name internally. -->
+  <node pkg="tf2_ros" exec="static_transform_publisher"
+        name="$(var camera_name)_base_frame_bridge"
+        args="--frame-id $(var base_frame_id) --child-frame-id $(var camera_name)_$(var base_frame_id)"/>
 </launch>
