@@ -37,6 +37,7 @@
     <param name="gain" type="int" value="-1"/>
 
     <remap from="image_raw" to="/task_camera/image_raw"/>
+    <remap from="image_raw/compressed" to="/task_camera/image_raw/compressed"/>
     <remap from="camera_info" to="/task_camera/camera_info"/>
   </node>
 
