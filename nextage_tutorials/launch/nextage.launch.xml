@@ -60,6 +60,10 @@
     <arg name="log_level" value="$(var log_level)"/>
   </include>
 
+  <include file="$(find-pkg-share nextage_tutorials)/launch/raw/d405_camera.launch.xml">
+    <arg name="log_level" value="$(var log_level)"/>
+  </include>
+
   <include file="$(find-pkg-share nextage_tutorials)/launch/raw/task_elp.launch.xml">
     <arg name="log_level" value="$(var log_level)"/>
   </include>
