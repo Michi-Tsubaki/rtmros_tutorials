@@ -690,7 +690,7 @@
   <joint name="RARM_CAMERA_Joint" type="fixed">
     <parent link="RARM_JOINT5_Link" />
     <child link="RARM_CAMERA_Link" />
-    <origin xyz="0.02 -0.045 -0.03" rpy="1.21300383 0 1.26012772" />
+    <origin xyz="-0.0762682557 0.0627098233 -0.0274769068" rpy="1.81198951 -0.00861059949 -2.60779872" />
   </joint>
   <link name="lhand_xl_xc_330_1_2">
     <visual>
