@@ -1016,10 +1016,12 @@
      (setq rarm-end-coords (make-cascoords :coords (send RARM_JOINT5_Link_lk :copy-worldcoords) :name :rarm-end-coords))
      (send rarm-end-coords :translate #f(-190.0 0.0 0.0))
      (send rarm-end-coords :rotate 1.5707963267948966 #f(0 1 0))
+     (send rarm-end-coords :rotate 1.5707963267948966 #f(0 0 1))
      (send RARM_JOINT5_Link_lk :assoc rarm-end-coords)
      (setq larm-end-coords (make-cascoords :coords (send LARM_JOINT5_Link_lk :copy-worldcoords) :name :larm-end-coords))
      (send larm-end-coords :translate #f(-190.0 0.0 0.0))
      (send larm-end-coords :rotate 1.5707963267948966 #f(0 1 0))
+     (send larm-end-coords :rotate 1.5707963267948966 #f(0 0 1))
      (send LARM_JOINT5_Link_lk :assoc larm-end-coords)
      ;; Skipping head-end-coords: no parent specified
 
