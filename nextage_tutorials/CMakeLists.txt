@@ -33,6 +33,7 @@ install(PROGRAMS
   scripts/ft_gravity_calib.py
   scripts/ft_gravity_compensate.py
   scripts/gripper_joint_state_publisher.py
+  scripts/head_track_rarm_joint5.py
   scripts/viser_teleope.py
   DESTINATION lib/${PROJECT_NAME}
 )
