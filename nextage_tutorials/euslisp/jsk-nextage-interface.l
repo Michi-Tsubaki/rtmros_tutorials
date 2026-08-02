@@ -310,16 +310,17 @@
                                             :test #'string=)))
                        (if index (rad2deg (elt positions index)) old-angle)))
                  joints current-angle-vector))
-      (mapc #'(lambda (joint angle)
-                (let ((index (position (send joint :name) names :test #'string=)))
-                  (when index
-                    ;; Simulated sensor noise can exceed a hard joint limit by
-                    ;; a fraction of a degree.  Keep the model valid without
-                    ;; discarding the raw value returned by :potentio-vector.
-                    (send joint :joint-angle
-                          (max (send joint :min-angle)
-                               (min angle (send joint :max-angle)))))))
-            joints measured)
+      (map nil #'(lambda (joint angle)
+                   (let ((index
+                          (position (send joint :name) names :test #'string=)))
+                     (when index
+                       ;; Simulated sensor noise can exceed a hard joint limit
+                       ;; by a fraction of a degree.  Keep the model valid
+                       ;; without discarding the raw :potentio-vector value.
+                       (send joint :joint-angle
+                             (max (send joint :min-angle)
+                                  (min angle (send joint :max-angle)))))))
+           joints measured)
       (setq current-angle-vector measured)))
 
   (:interpolatingp ()
@@ -341,6 +342,24 @@
               ros::*action-goal-state-succeeded*)
            (= (send result :error_code) 0)))))
 
+(defun call-with-stdio-to-devnull (thunk)
+  "Run THUNK with fd 1/2 (stdout/stderr) redirected to /dev/null.
+Used to silence jskeus's per-triangle \"PQP_AddTri\" warnings that flood
+the console when eus is built without PQP support."
+  (let* ((devnull (open "/dev/null" :direction :output :if-exists :append))
+         (devnull-fd (send devnull :outfd))
+         (saved-out (unix:dup 1))
+         (saved-err (unix:dup 2)))
+    (unwind-protect
+        (progn (unix:dup2 devnull-fd 1)
+               (unix:dup2 devnull-fd 2)
+               (funcall thunk))
+      (unix:dup2 saved-out 1)
+      (unix:dup2 saved-err 2)
+      (unix::uclose saved-out)
+      (unix::uclose saved-err)
+      (close devnull))))
+
 (defun nextage-init
   (&key ((:controller-action ca)
          "/fullbody_controller/follow_joint_trajectory_action")
@@ -351,7 +370,8 @@
         ((:simulation-look-all sim-look-all) t))
   (unless (ros::ok) (ros::roseus "nextage_interface"))
   (unless (boundp '*nextage*)
-    (setq *nextage* (instance nextageopen-robot :init)))
+    (setq *nextage* (call-with-stdio-to-devnull
+                      #'(lambda () (instance nextageopen-robot :init)))))
   (setq *ri* (instance nextage-interface :init
                        :robot *nextage*
                        :controller-action ca
