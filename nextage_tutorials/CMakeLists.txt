@@ -16,7 +16,7 @@ find_program(IRTEUSGL_EXECUTABLE irteusgl
   HINTS "$ENV{EUSDIR}/Linux64/bin")
 
 set(NEXTAGE_LISP_FILES)
-foreach(lisp_file nextage.l jsk-nextage.l jsk-nextage-grippers.l)
+foreach(lisp_file nextage.l jsk-nextage.l)
   if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${lisp_file}")
     list(APPEND NEXTAGE_LISP_FILES "${CMAKE_CURRENT_SOURCE_DIR}/${lisp_file}")
   endif()
