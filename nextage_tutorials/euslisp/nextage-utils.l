@@ -1,8 +1,23 @@
 (require "package://nextage_tutorials/euslisp/jsk-nextage-interface.l")
 
+(defun nextage-valid-collision-pair-p (pair)
+  (and (send (car pair) :faces)
+       (send (cdr pair) :faces)))
+
 (defmethod NextageOpen-robot
-  (:self-collision-check (&rest args)
-    (let ((ret (send-super* :self-collision-check args)))
+  (:self-collision-check
+   (&rest args
+    &key (mode :all)
+         (pairs (send self :collision-check-pairs))
+         (collision-func 'collision-check)
+    &allow-other-keys)
+    (let ((ret (send-super :self-collision-check
+                           :mode mode
+                           :pairs (remove-if
+                                   #'(lambda (pair)
+                                       (not (nextage-valid-collision-pair-p pair)))
+                                   pairs)
+                           :collision-func collision-func)))
       (when ret
         (setq ret (remove-if #'(lambda (l)
                                  (or (and (eq (car l) (send self :link "CHEST_JOINT0_Link"))
