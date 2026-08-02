@@ -12,10 +12,18 @@ from nextage_tutorials.uv_environment import add_uv_site_packages
 
 add_uv_site_packages()
 
+import numpy as np
+
 from skrobot.models import Nextage
 from skrobot.viewers import ViserViewer
+from skrobot.coordinates.math import quaternion2matrix
+from skrobot.coordinates.math import rotation_distance
 
 from nextage_tutorials.jsk_nextage_model import JSKNextageOpenGripper
+
+
+IK_TARGET_POSITION_TOLERANCE = 0.01
+IK_TARGET_ROTATION_TOLERANCE = np.deg2rad(5.0)
 
 
 def build_parser():
@@ -79,6 +87,40 @@ def sync_from_robot(nextage: Nextage, ri):
         ri.get_logger().warn(f"Could not sync viewer from joint_states: {reason}")
 
 
+def unresolved_ik_targets(viewer: ViserViewer):
+    unresolved = []
+    constrain_rotation = bool(
+        getattr(getattr(viewer, "_ik_constrain_rotation", None), "value", False)
+    )
+
+    for robot_targets in getattr(viewer, "_ik_targets", {}).values():
+        for group_name, target in robot_targets.items():
+            control = target.get("control")
+            end_coords = target.get("end_coords")
+            if control is None or end_coords is None:
+                continue
+
+            target_pos = np.asarray(control.position, dtype=np.float64)
+            current_pos = np.asarray(end_coords.worldpos(), dtype=np.float64)
+            pos_error = float(np.linalg.norm(target_pos - current_pos))
+
+            rot_error = 0.0
+            if constrain_rotation:
+                target_rot = quaternion2matrix(
+                    np.asarray(control.wxyz, dtype=np.float64)
+                )
+                current_rot = np.asarray(end_coords.worldrot(), dtype=np.float64)
+                rot_error = float(rotation_distance(target_rot, current_rot))
+
+            if (
+                pos_error > IK_TARGET_POSITION_TOLERANCE
+                or rot_error > IK_TARGET_ROTATION_TOLERANCE
+            ):
+                unresolved.append((group_name, pos_error, rot_error))
+
+    return unresolved
+
+
 def add_robot_send_controls(
     viewer: ViserViewer,
     nextage: Nextage,
@@ -111,6 +153,20 @@ def add_robot_send_controls(
             status_text.value = "Send already in progress"
             return
         try:
+            unresolved_targets = unresolved_ik_targets(viewer)
+            if unresolved_targets:
+                group_name, pos_error, rot_error = max(
+                    unresolved_targets, key=lambda item: (item[1], item[2])
+                )
+                message = (
+                    "IK not solved: "
+                    f"{group_name} pos_err={pos_error:.3f}m "
+                    f"rot_err={np.rad2deg(rot_error):.1f}deg"
+                )
+                status_text.value = message
+                ri.get_logger().warn(f"Blocked send because {message}")
+                return
+
             av = nextage.angle_vector()
             status_text.value = "Sending..."
             ri.angle_vector(
