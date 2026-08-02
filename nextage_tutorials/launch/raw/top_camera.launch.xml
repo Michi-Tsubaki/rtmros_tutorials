@@ -8,6 +8,7 @@
   <arg name="enable_pointcloud" default="true"/>
   <arg name="pointcloud_stream_filter" default="2"/>
   <arg name="pointcloud_stream_index_filter" default="0"/>
+  <arg name="ordered_pc" default="true"/>
   <arg name="enable_infra" default="false"/>
   <arg name="enable_confidence" default="false"/>
   <arg name="enable_gyro" default="false"/>
@@ -40,6 +41,7 @@
     <param name="pointcloud.enable" type="bool" value="$(var enable_pointcloud)"/>
     <param name="pointcloud.stream_filter" type="int" value="$(var pointcloud_stream_filter)"/>
     <param name="pointcloud.stream_index_filter" type="int" value="$(var pointcloud_stream_index_filter)"/>
+    <param name="pointcloud.ordered_pc" type="bool" value="$(var ordered_pc)"/>
     <param name="align_depth.enable" type="bool" value="$(var align_depth)"/>
     <param name="publish_tf" type="bool" value="$(var publish_tf)"/>
     <param name="tf_publish_rate" type="float" value="$(var tf_publish_rate)"/>

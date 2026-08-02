@@ -2,7 +2,7 @@
 <launch>
   <arg name="camera_namespace" default="rhand_camera"/>
   <arg name="camera_name" default="rhand_camera"/>
-  <arg name="serial_no" default=""/>
+  <arg name="serial_no" default="230322274159"/>
   <arg name="usb_port_id" default=""/>
   <arg name="json_file_path" default=""/>
   <arg name="initial_reset" default="false"/>

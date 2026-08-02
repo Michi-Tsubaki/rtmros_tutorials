@@ -15,6 +15,7 @@
   <arg name="usb_port_id" default=""/>
   <arg name="initial_reset" default="false"/>
   <arg name="enable_pointcloud" default="true"/>
+  <arg name="ordered_pc" default="true"/>
   <arg name="enable_infra" default="false"/>
   <arg name="enable_confidence" default="false"/>
   <arg name="enable_rgbd" default="false"/>
@@ -23,10 +24,24 @@
   <arg name="tf_publish_rate" default="0"/>
   <arg name="base_frame_id" default="link"/>
   <arg name="tf_prefix" default=""/>
+  <arg name="launch_d405_camera" default="true"/>
+  <arg name="d405_camera_namespace" default="rhand_camera"/>
+  <arg name="d405_camera_name" default="rhand_camera"/>
+  <arg name="d405_serial_no" default="230322274159"/>
+  <arg name="d405_usb_port_id" default=""/>
+  <arg name="d405_initial_reset" default="false"/>
+  <arg name="d405_enable_pointcloud" default="true"/>
+  <arg name="d405_enable_infra" default="false"/>
+  <arg name="d405_align_depth" default="true"/>
+  <arg name="d405_publish_tf" default="true"/>
+  <arg name="d405_tf_publish_rate" default="0"/>
+  <arg name="d405_base_frame_id" default="RARM_CAMERA_Link"/>
+  <arg name="d405_tf_prefix" default=""/>
   <arg name="use_sim_time" default="false"/>
   <arg name="publish_gripper_joint_states" default="true"/>
   <arg name="gripper_joint_state_rate" default="10.0"/>
   <arg name="gripper_position" default="0.05"/>
+  <arg name="launch_rviz" default="true"/>
 
   <include file="$(find-pkg-share nextage_tutorials)/launch/raw/jsk_robot_state_publisher.launch.xml">
     <arg name="use_sim_time" value="$(var use_sim_time)"/>
@@ -51,6 +66,7 @@
     <arg name="usb_port_id" value="$(var usb_port_id)"/>
     <arg name="initial_reset" value="$(var initial_reset)"/>
     <arg name="enable_pointcloud" value="$(var enable_pointcloud)"/>
+    <arg name="ordered_pc" value="$(var ordered_pc)"/>
     <arg name="enable_infra" value="$(var enable_infra)"/>
     <arg name="enable_confidence" value="$(var enable_confidence)"/>
     <arg name="align_depth" value="$(var align_depth)"/>
@@ -60,7 +76,19 @@
     <arg name="log_level" value="$(var log_level)"/>
   </include>
 
-  <include file="$(find-pkg-share nextage_tutorials)/launch/raw/d405_camera.launch.xml">
+  <include file="$(find-pkg-share nextage_tutorials)/launch/raw/d405_camera.launch.xml" if="$(var launch_d405_camera)">
+    <arg name="camera_namespace" value="$(var d405_camera_namespace)"/>
+    <arg name="camera_name" value="$(var d405_camera_name)"/>
+    <arg name="serial_no" value="$(var d405_serial_no)"/>
+    <arg name="usb_port_id" value="$(var d405_usb_port_id)"/>
+    <arg name="initial_reset" value="$(var d405_initial_reset)"/>
+    <arg name="enable_pointcloud" value="$(var d405_enable_pointcloud)"/>
+    <arg name="enable_infra" value="$(var d405_enable_infra)"/>
+    <arg name="align_depth" value="$(var d405_align_depth)"/>
+    <arg name="publish_tf" value="$(var d405_publish_tf)"/>
+    <arg name="tf_publish_rate" value="$(var d405_tf_publish_rate)"/>
+    <arg name="base_frame_id" value="$(var d405_base_frame_id)"/>
+    <arg name="tf_prefix" value="$(var d405_tf_prefix)"/>
     <arg name="log_level" value="$(var log_level)"/>
   </include>
 
@@ -70,7 +98,7 @@
 
   <include file="$(find-pkg-share nextage_tutorials)/launch/raw/dual_touch.launch.xml"/>
 
-  <include file="$(find-pkg-share nextage_tutorials)/launch/raw/jsk-nextage-rviz.launch.xml">
+  <include file="$(find-pkg-share nextage_tutorials)/launch/raw/jsk-nextage-rviz.launch.xml" if="$(var launch_rviz)">
     <arg name="log_level" value="$(var log_level)"/>
   </include>
 </launch>
