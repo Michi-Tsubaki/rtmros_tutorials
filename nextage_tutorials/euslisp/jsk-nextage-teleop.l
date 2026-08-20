@@ -13,8 +13,8 @@
 
 (setq *nextage-teleop-left-touch-state-topic* "/left_ft/state")
 (setq *nextage-teleop-right-touch-state-topic* "/right_ft/state")
-(setq *nextage-teleop-base-offset-l* #f(450 80 30))
-(setq *nextage-teleop-base-offset-r* #f(450 -80 -100))
+(setq *nextage-teleop-base-offset-l* #f(500 80 -100))
+(setq *nextage-teleop-base-offset-r* #f(500 -80 -100))
 (setq *nextage-teleop-auto-offset* t)
 ;; Operator faces the robot.  Keep the same mapping for position and
 ;; orientation: touch +x -> robot +y, touch +y -> robot -x, touch +z -> robot +z.
@@ -27,12 +27,15 @@
   #f(31.905903 68.529998 36.32414))
 (setq *nextage-teleop-gripper-tip-offset* #f(0 0 67.43))
 (setq *nextage-teleop-position-scale* 2.0)
-(setq *nextage-teleop-rate* 10.0)
-(setq *nextage-teleop-send-time* 400)
+(setq *nextage-teleop-rate* 20.0)
+(setq *nextage-teleop-command-rate* 20.0)
+(setq *nextage-teleop-send-time* 200)
+(setq *nextage-teleop-command-transport* :action)
+(setq *nextage-teleop-command-topic* "/fullbody_controller/command")
 (setq *nextage-teleop-preempt-active-goal* t)
 (setq *nextage-teleop-initial-pose-time* 5000)
 (setq *nextage-teleop-use-torso* nil)
-(setq *nextage-teleop-debug-mode* nil)
+(setq *nextage-teleop-debug-mode* t)
 (setq *nextage-teleop-check-self-collision* t)
 (setq *nextage-teleop-debug-print-period* 20)
 (setq *nextage-teleop-left-tool* :gripper)
@@ -55,6 +58,7 @@
 (defvar *nextage-teleop-right-pinch-coords* nil)
 (defvar *nextage-teleop-hand-launch-started* nil)
 (defvar *nextage-teleop-last-arm-command-loop* nil)
+(defvar *nextage-teleop-command-publisher-advertised* nil)
 
 (defun nt-dissoc-coords (coords)
   (when coords
@@ -85,6 +89,7 @@
   (setq *nextage-teleop-left-calibration* nil)
   (setq *nextage-teleop-right-calibration* nil)
   (setq *nextage-teleop-last-arm-command-loop* nil)
+  (setq *nextage-teleop-command-publisher-advertised* nil)
   (nt-clear-pinch))
 
 (defun nt-left-cb (msg)
@@ -261,7 +266,7 @@
                            (send move-target :parent)
                            (send robot arm :root-link))
           :rotation-axis t
-          :stop 5
+          :stop 10
           :revert-if-fail t)))
 
 (defun nt-open-tool (hand tool)
@@ -286,10 +291,26 @@
       (nt-open-tool hand tool)))
   close-state)
 
+(defun nt-positive-number-p (value)
+  (and (numberp value) (> value 0)))
+
+(defun nt-normalize-command-transport (transport)
+  (case transport
+    (:action :action)
+    (:topic :topic)
+    (t (error "command-transport must be :action or :topic: ~A"
+              transport))))
+
 (defun nt-command-interval-loops ()
+  (unless (nt-positive-number-p *nextage-teleop-command-rate*)
+    (error "command-rate must be positive Hz: ~A"
+           *nextage-teleop-command-rate*))
+  (unless (nt-positive-number-p *nextage-teleop-rate*)
+    (error "rate must be positive Hz: ~A"
+           *nextage-teleop-rate*))
   (max 1
-       (round (* *nextage-teleop-rate*
-                 (/ *nextage-teleop-send-time* 1000.0)))))
+       (round (/ *nextage-teleop-rate*
+                 *nextage-teleop-command-rate*))))
 
 (defun nt-command-due-p ()
   (or (null *nextage-teleop-last-arm-command-loop*)
@@ -298,13 +319,40 @@
           (nt-command-interval-loops))))
 
 (defun nt-command-busy-p ()
-  (if (send *ri* :simulation-modep)
+  (if (or (eq *nextage-teleop-command-transport* :topic)
+          (send *ri* :simulation-modep))
       nil
     (and (send *ri* :interpolatingp) t)))
 
 (defun nt-command-ready-p (command-busy)
   (or (not command-busy)
       *nextage-teleop-preempt-active-goal*))
+
+(defun nt-advertise-command-topic ()
+  (when (and (eq *nextage-teleop-command-transport* :topic)
+             (not (send *ri* :simulation-modep)))
+    (ros::advertise *nextage-teleop-command-topic*
+                    trajectory_msgs::JointTrajectory 1)
+    (setq *nextage-teleop-command-publisher-advertised* t)
+    (ros::ros-info
+     "NEXTAGE teleop: publishing streaming arm commands to ~A"
+     *nextage-teleop-command-topic*)))
+
+(defun nt-make-trajectory-command (angles tm)
+  (let ((trajectory (instance trajectory_msgs::JointTrajectory :init)))
+    (send trajectory :joint_names (send *ri* :joint-names))
+    (send trajectory :points (list (send *ri* :make-point angles tm)))
+    trajectory))
+
+(defun nt-send-arm-command (angles tm)
+  (if (and (eq *nextage-teleop-command-transport* :topic)
+           (not (send *ri* :simulation-modep)))
+      (progn
+        (unless *nextage-teleop-command-publisher-advertised*
+          (nt-advertise-command-topic))
+        (ros::publish *nextage-teleop-command-topic*
+                      (nt-make-trajectory-command angles tm)))
+    (send *ri* :angle-vector angles tm)))
 
 (defun nt-move-initial-pose (robot tm)
   (when (and (numberp tm) (> tm 0))
@@ -313,7 +361,7 @@
      (/ tm 1000.0))
     (send robot :reset-pose)
     (send robot :head :angle-vector #f(0 0))
-    (send robot :larm :move-end-pos #f(0 0 80))
+    (send robot :larm :move-end-pos #f(0 0 -50))
     (send robot :rarm :move-end-pos #f(0 0 -50))
     (send *ri* :angle-vector (send robot :angle-vector) tm)
     (send *ri* :wait-interpolation)))
@@ -379,6 +427,10 @@
      ((:auto-offset auto-offset) *nextage-teleop-auto-offset*)
      ((:position-scale position-scale) *nextage-teleop-position-scale*)
      ((:send-time send-time) *nextage-teleop-send-time*)
+     ((:command-rate command-rate) *nextage-teleop-command-rate*)
+     ((:command-transport command-transport)
+      *nextage-teleop-command-transport*)
+     ((:command-topic command-topic) *nextage-teleop-command-topic*)
      ((:preempt-active-goal preempt-active-goal)
       *nextage-teleop-preempt-active-goal*)
      ((:initial-pose-time initial-pose-time)
@@ -403,12 +455,24 @@
      ((:controller-action controller-action)
       "/fullbody_controller/follow_joint_trajectory_action")
      ((:joint-states-topic joint-states-topic) "/robot/joint_states"))
+  (unless (nt-positive-number-p rate)
+    (error "rate must be positive Hz: ~A" rate))
+  (unless (nt-positive-number-p command-rate)
+    (error "command-rate must be positive Hz: ~A" command-rate))
+  (unless (nt-positive-number-p send-time)
+    (error "send-time must be positive milliseconds: ~A" send-time))
+  (setq command-transport (nt-normalize-command-transport command-transport))
+  (when (and (eq command-transport :topic) (not command-topic))
+    (error "command-topic must be set when command-transport is :topic"))
   (nt-init-state)
   (setq *nextage-teleop-left-tool* (detachable-tool-normalize-tool left-tool))
   (setq *nextage-teleop-right-tool* (detachable-tool-normalize-tool right-tool))
   (setq *nextage-teleop-auto-offset* auto-offset)
   (setq *nextage-teleop-position-scale* position-scale)
   (setq *nextage-teleop-send-time* send-time)
+  (setq *nextage-teleop-command-rate* command-rate)
+  (setq *nextage-teleop-command-transport* command-transport)
+  (setq *nextage-teleop-command-topic* command-topic)
   (setq *nextage-teleop-preempt-active-goal* preempt-active-goal)
   (setq *nextage-teleop-initial-pose-time* initial-pose-time)
   (setq *nextage-teleop-rate* rate)
@@ -433,6 +497,7 @@
   (when (eq execution-mode :controller)
     (send *ri* :ensure-controller-or-simulator 10.0))
   (nt-move-initial-pose *robot* *nextage-teleop-initial-pose-time*)
+  (nt-advertise-command-topic)
   (tool-setup-robot *robot* :robot-kind :nextage)
   (when install-tool-tips
     (attach-tool *robot* :larm *nextage-teleop-left-tool*
@@ -455,6 +520,13 @@
                  right-topic *nextage-teleop-right-tool*
                  *nextage-teleop-position-scale*
                  *nextage-teleop-auto-offset*)
+  (ros::ros-info
+   "NEXTAGE teleop timing: loop=~A Hz, command=~A Hz (~A loop interval), horizon=~A ms, transport=~A"
+   *nextage-teleop-rate*
+   *nextage-teleop-command-rate*
+   (nt-command-interval-loops)
+   *nextage-teleop-send-time*
+   *nextage-teleop-command-transport*)
   (ros::rate *nextage-teleop-rate*)
 
   (do-until-key
@@ -558,9 +630,9 @@
                 work-limit-ok
                 command-due
                 (nt-command-ready-p command-busy))
-       (send *ri* :angle-vector
-             (send *robot* :angle-vector)
-             *nextage-teleop-send-time*)
+       (nt-send-arm-command
+        (send *robot* :angle-vector)
+        *nextage-teleop-send-time*)
        (setq *nextage-teleop-last-arm-command-loop*
              *nextage-teleop-loop-count*)
        (setq command-sent t)
