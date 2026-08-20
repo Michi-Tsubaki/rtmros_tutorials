@@ -4,6 +4,15 @@ topics:
     type: sensor_msgs/msg/JointState
     queue_size: 10
   -
+    topic: /fullbody_controller/command
+    type: trajectory_msgs/msg/JointTrajectory
+    queue_size: 1
+    qos:
+      history: keep_last
+      depth: 1
+      reliability: reliable
+      durability: volatile
+  -
     topic: /robot_description
     type: std_msgs/msg/String
     queue_size: 1

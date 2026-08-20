@@ -23,10 +23,11 @@
     args="__name:=nextage_dynamic_bridge --ros-args --log-level $(var log_level)"/>
 
   <!--
-    Explicit topic allow-list (joint_states, robot_description, tf, tf_static),
-    loaded onto the ROS1 parameter server before starting parameter_bridge.
-    Camera topics are intentionally absent from this file. Bridge config comes
-    from the ROS 1 param server; the wrapper only passes a ROS 1 node-name
+    Explicit topic allow-list (joint_states, full-body command,
+    robot_description, tf, tf_static), loaded onto the ROS1 parameter server
+    before starting parameter_bridge. Camera topics are intentionally absent
+    from this file. Bridge config comes from the ROS 1 param server; the wrapper
+    only passes a ROS 1 node-name
     remap so parameter_bridge does not collide with dynamic_bridge.
   -->
   <executable
