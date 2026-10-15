@@ -24,9 +24,15 @@
   <arg name="tf_publish_rate" default="0"/>
   <arg name="base_frame_id" default="link"/>
   <arg name="tf_prefix" default=""/>
+  <!-- Cameras: top L515, left D405, right USB webcam. -->
+  <arg name="launch_top_camera" default="true"/>
   <arg name="launch_d405_camera" default="true"/>
-  <arg name="d405_camera_namespace" default="rhand_camera"/>
-  <arg name="d405_camera_name" default="rhand_camera"/>
+  <arg name="launch_lhand_camera" default="$(var launch_d405_camera)"/>
+  <arg name="launch_task_camera" default="false"/>
+  <arg name="launch_rhand_camera" default="true"/>
+  <arg name="rhand_video_device" default="/dev/v4l/by-id/usb-Innomaker_Innomaker-U20CAM-1080p-S1_SN0001-video-index0"/>
+  <arg name="d405_camera_namespace" default="lhand_camera"/>
+  <arg name="d405_camera_name" default="lhand_camera"/>
   <arg name="d405_serial_no" default="230322274159"/>
   <arg name="d405_usb_port_id" default=""/>
   <arg name="d405_initial_reset" default="false"/>
@@ -35,7 +41,7 @@
   <arg name="d405_align_depth" default="true"/>
   <arg name="d405_publish_tf" default="true"/>
   <arg name="d405_tf_publish_rate" default="0"/>
-  <arg name="d405_base_frame_id" default="RARM_CAMERA_Link"/>
+  <arg name="d405_base_frame_id" default="LARM_CAMERA_Link"/>
   <arg name="d405_tf_prefix" default=""/>
   <arg name="use_sim_time" default="false"/>
   <arg name="publish_gripper_joint_states" default="true"/>
@@ -59,7 +65,7 @@
     <arg name="left_frame_id" value="$(var left_frame_id)"/>
   </include>
 
-  <include file="$(find-pkg-share nextage_tutorials)/launch/raw/top_camera.launch.xml">
+  <include file="$(find-pkg-share nextage_tutorials)/launch/raw/top_camera.launch.xml" if="$(var launch_top_camera)">
     <arg name="camera_namespace" value="$(var camera_namespace)"/>
     <arg name="camera_name" value="$(var camera_name)"/>
     <arg name="serial_no" value="$(var serial_no)"/>
@@ -76,7 +82,7 @@
     <arg name="log_level" value="$(var log_level)"/>
   </include>
 
-  <include file="$(find-pkg-share nextage_tutorials)/launch/raw/d405_camera.launch.xml" if="$(var launch_d405_camera)">
+  <include file="$(find-pkg-share nextage_tutorials)/launch/raw/d405_camera.launch.xml" if="$(var launch_lhand_camera)">
     <arg name="camera_namespace" value="$(var d405_camera_namespace)"/>
     <arg name="camera_name" value="$(var d405_camera_name)"/>
     <arg name="serial_no" value="$(var d405_serial_no)"/>
@@ -92,7 +98,12 @@
     <arg name="log_level" value="$(var log_level)"/>
   </include>
 
-  <include file="$(find-pkg-share nextage_tutorials)/launch/raw/task_elp.launch.xml">
+  <include file="$(find-pkg-share nextage_tutorials)/launch/raw/rhand_camera.launch.xml" if="$(var launch_rhand_camera)">
+    <arg name="video_device" value="$(var rhand_video_device)"/>
+    <arg name="log_level" value="$(var log_level)"/>
+  </include>
+
+  <include file="$(find-pkg-share nextage_tutorials)/launch/raw/task_elp.launch.xml" if="$(var launch_task_camera)">
     <arg name="log_level" value="$(var log_level)"/>
   </include>
 

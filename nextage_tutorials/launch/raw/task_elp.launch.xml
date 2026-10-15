@@ -10,7 +10,7 @@
   <arg name="image_height" default="2160"/>
   <arg name="framerate" default="30.0"/>
 
-  <node
+  <node respawn="true" respawn_delay="3.0"
     pkg="usb_cam"
     exec="usb_cam_node_exe"
     name="task_camera"

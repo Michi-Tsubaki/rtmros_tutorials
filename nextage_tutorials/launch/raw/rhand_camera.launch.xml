@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="video_device" default="/dev/v4l/by-id/usb-Innomaker_Innomaker-U20CAM-1080p-S1_SN0001-video-index0"/>
+  <arg name="frame_id" default="RARM_CAMERA_Link"/>
+  <arg name="image_width" default="640"/>
+  <arg name="image_height" default="480"/>
+  <arg name="framerate" default="30.0"/>
+  <arg name="log_level" default="info"/>
+
+  <node respawn="true" respawn_delay="3.0" pkg="usb_cam" exec="usb_cam_node_exe"
+        namespace="rhand_camera" name="rhand_camera" output="screen"
+        args="--ros-args --log-level $(var log_level)">
+    <!-- Resolve by-id here: this usb_cam version misresolves relative symlinks. -->
+    <param name="video_device" type="str" value="$(command 'readlink -fn $(var video_device)')"/>
+    <param name="io_method" type="str" value="mmap"/>
+    <param name="pixel_format" type="str" value="mjpeg2rgb"/>
+    <param name="camera_name" type="str" value="rhand_camera"/>
+    <param name="frame_id" type="str" value="$(var frame_id)"/>
+    <param name="image_width" type="int" value="$(var image_width)"/>
+    <param name="image_height" type="int" value="$(var image_height)"/>
+    <param name="framerate" type="float" value="$(var framerate)"/>
+    <param name="camera_info_url" type="str" value=""/>
+    <remap from="image_raw" to="color/image_raw"/>
+    <remap from="camera_info" to="color/camera_info"/>
+  </node>
+</launch>

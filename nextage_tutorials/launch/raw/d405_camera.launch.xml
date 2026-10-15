@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <launch>
-  <arg name="camera_namespace" default="rhand_camera"/>
-  <arg name="camera_name" default="rhand_camera"/>
+  <arg name="camera_namespace" default="lhand_camera"/>
+  <arg name="camera_name" default="lhand_camera"/>
   <arg name="serial_no" default="230322274159"/>
   <arg name="usb_port_id" default=""/>
   <arg name="json_file_path" default=""/>
@@ -16,9 +16,9 @@
   <arg name="enable_infra" default="false"/>
   <arg name="enable_infra1" default="false"/>
   <arg name="enable_infra2" default="false"/>
-  <arg name="depth_profile" default="0,0,0"/>
+  <arg name="depth_profile" default="0,0,10"/>
   <arg name="depth_format" default="Z16"/>
-  <arg name="color_profile" default="0,0,0"/>
+  <arg name="color_profile" default="0,0,10"/>
   <arg name="color_format" default="RGB8"/>
   <arg name="enable_gyro" default="false"/>
   <arg name="enable_accel" default="false"/>
@@ -26,7 +26,7 @@
   <arg name="align_depth" default="true"/>
   <arg name="publish_tf" default="true"/>
   <arg name="tf_publish_rate" default="0"/>
-  <arg name="base_frame_id" default="RARM_CAMERA_Link"/>
+  <arg name="base_frame_id" default="LARM_CAMERA_Link"/>
   <arg name="tf_prefix" default=""/>
   <arg name="clip_distance" default="-2."/>
   <arg name="reconnect_timeout" default="6."/>
@@ -41,7 +41,7 @@
   <arg name="hdr_merge" default="false"/>
   <arg name="log_level" default="info"/>
 
-  <node pkg="realsense2_camera" exec="realsense2_camera_node"
+  <node respawn="true" respawn_delay="3.0" pkg="realsense2_camera" exec="realsense2_camera_node"
         namespace="$(var camera_namespace)" name="$(var camera_name)"
         output="screen" args="--ros-args --log-level $(var log_level)">
     <param name="camera_name" type="str" value="$(var camera_name)"/>

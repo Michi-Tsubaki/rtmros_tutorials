@@ -13,6 +13,7 @@
   <group>
     <push-ros-namespace namespace="$(var left_namespace)"/>
     <include file="$(find-pkg-share touch_common)/launch/touch.launch.py">
+      <arg name="respawn" value="true"/>
       <arg name="device_name" value="$(var left_device_name)"/>
       <arg name="reference_frame" value="$(var left_reference_frame)"/>
       <arg name="units" value="$(var units)"/>
@@ -26,6 +27,7 @@
     <group>
       <push-ros-namespace namespace="$(var right_namespace)"/>
       <include file="$(find-pkg-share touch_common)/launch/touch.launch.py">
+        <arg name="respawn" value="true"/>
         <arg name="device_name" value="$(var right_device_name)"/>
         <arg name="reference_frame" value="$(var right_reference_frame)"/>
         <arg name="units" value="$(var units)"/>

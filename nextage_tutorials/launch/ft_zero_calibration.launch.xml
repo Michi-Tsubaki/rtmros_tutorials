@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- Static six-axis zeroing only. Start the existing FT driver first.
+       No contact, no motion during collection. Pose-dependent gravity is not removed.
+       calibrate:=true overwrites this arm's file only after a successful collection.
+       calibrate:=false loads the saved file without collecting a new bias.
+       The corrected topic is NOT automatically connected to admittance_controller:
+       a ros2_control FT hardware adapter must consume it (with stale-data handling).
+       Do not recalibrate while an active controller is using the measurements.
+  -->
+  <arg name="arm" default="rarm">
+    <choice value="rarm"/>
+    <choice value="larm"/>
+  </arg>
+  <let name="ft_namespace" value="right_ft"/>
+  <let name="frame" value="RARM_FTSENSOR_SENSOR_Link"/>
+  <group if="$(eval &quot;'$(var arm)' == 'larm'&quot;)" scoped="false">
+    <let name="ft_namespace" value="left_ft"/>
+    <let name="frame" value="LARM_FTSENSOR_SENSOR_Link"/>
+  </group>
+  <arg name="input_topic" default="/$(var ft_namespace)/force_torque"/>
+  <arg name="output_topic" default="/$(var ft_namespace)/force_torque_zeroed"/>
+  <arg name="sensor_frame" default="$(var frame)"/>
+  <arg name="calibration_file" default="$(env HOME)/.ros/nextage/$(var arm)_ft_zero.yaml"/>
+  <arg name="calibrate" default="true"/>
+  <arg name="sample_count" default="500"/>
+  <arg name="timeout" default="30.0"/>
+  <arg name="force_std_limit" default="0.2"/>
+  <arg name="torque_std_limit" default="0.02"/>
+  <node pkg="nextage_tutorials" exec="ft_zero_calibration.py"
+        name="$(var arm)_ft_zero" output="screen">
+    <param name="input_topic" value="$(var input_topic)"/>
+    <param name="output_topic" value="$(var output_topic)"/>
+    <param name="sensor_frame" value="$(var sensor_frame)"/>
+    <param name="calibration_file" value="$(var calibration_file)"/>
+    <param name="calibrate" value="$(var calibrate)"/>
+    <param name="sample_count" value="$(var sample_count)"/>
+    <param name="timeout" value="$(var timeout)"/>
+    <param name="force_std_limit" value="$(var force_std_limit)"/>
+    <param name="torque_std_limit" value="$(var torque_std_limit)"/>
+  </node>
+</launch>

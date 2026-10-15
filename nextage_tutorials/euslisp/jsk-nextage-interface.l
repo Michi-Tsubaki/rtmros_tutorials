@@ -110,6 +110,10 @@
     (setq action-client
           (instance nextage-controller-action-client :init self controller-action
                     control_msgs::FollowJointTrajectory))
+    ;; Observation-only copy of outgoing goals for dataset/rosbag recording.
+    ;; Keep this separate from /fullbody_controller/command (a motion input).
+    (ros::advertise (concatenate string controller-action "/recording_trajectory")
+                    trajectory_msgs::JointTrajectory 10)
     (ros::subscribe joint-states-topic sensor_msgs::JointState
                     #'send self :joint-state-callback 1)
     (when (eq execution-mode :kinematic-simulator)
@@ -293,7 +297,12 @@
         (send trajectory :points points)
         (let ((goal (instance control_msgs::FollowJointTrajectory_Goal :init)))
           (send goal :trajectory trajectory)
-          (send action-client :send-goal goal)))))
+          (prog1 (send action-client :send-goal goal)
+            ;; Preserve all points and the action client's return value. This
+            ;; records a sent target, not confirmation that it was accepted.
+            (ros::publish
+             (concatenate string controller-action "/recording_trajectory")
+             trajectory))))))
 
   (:sub-angle-vector (angles reference)
     (map float-vector #'shortest-angle angles reference))
@@ -336,11 +345,21 @@
         (send self :kinematic-simulator-callback))
       (return-from :wait-interpolation t))
     (unless (send action-client :wait-for-result)
+      (ros::ros-err "NEXTAGE trajectory: no result from ~A (state=~A)"
+                    controller-action (send action-client :get-state))
       (return-from :wait-interpolation nil))
-    (let ((result (send action-client :get-result)))
-      (and (= (send action-client :get-state)
-              ros::*action-goal-state-succeeded*)
-           (= (send result :error_code) 0)))))
+    (let* ((result (send action-client :get-result))
+           (state (send action-client :get-state))
+           (success (and result
+                         (= state ros::*action-goal-state-succeeded*)
+                         (= (send result :error_code) 0))))
+      (unless success
+        (ros::ros-err
+         "NEXTAGE trajectory failed: action=~A state=~A error_code=~A error_string=~A"
+         controller-action state
+         (if result (send result :error_code) nil)
+         (if result (send result :error_string) "no result")))
+      success)))
 
 (defun call-with-stdio-to-devnull (thunk)
   "Run THUNK with fd 1/2 (stdout/stderr) redirected to /dev/null.

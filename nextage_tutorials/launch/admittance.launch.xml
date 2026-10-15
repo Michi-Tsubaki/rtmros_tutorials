@@ -1,0 +1,49 @@
+<?xml version="1.0"?>
+<launch>
+  <!--
+    Load one arm into an EXISTING ROS 2 controller_manager.
+    Prerequisites (the current ROS 1 / hrpsys topic bridge does not provide these):
+      * A ros2_control hardware driver exporting the six arm joints' position
+        command/state interfaces and the FT sensor's force.x/y/z, torque.x/y/z.
+      * The manager's robot_description must contain the Nextage links below
+        and the corresponding ros2_control hardware configuration.
+      * admittance_controller and kinematics_interface_kdl installed.
+    A WrenchStamped topic cannot replace the hardware FT state interfaces.
+    wrench_reference is a target offset, NOT the measured wrench input.
+
+    Default: configure only; no motion and no existing controller switching.
+    Before activation, set the actual FT hardware name, payload/CoG and gains
+    in the YAML and release any controller claiming the same arm joints.
+    The CHEST joint must remain stationary while using this six-joint chain.
+
+    Examples (after the prerequisites above have been met):
+      ros2 launch nextage_tutorials admittance.launch.xml arm:=rarm
+      ros2 launch nextage_tutorials admittance.launch.xml arm:=larm
+    For a reviewed, calibrated setup, inactive:=false activates at launch.
+    References: /rarm_admittance_controller/joint_references
+                (trajectory_msgs/msg/JointTrajectoryPoint; JOINT0..5 order)
+    State: /rarm_admittance_controller/state
+    Documentation:
+    https://control.ros.org/rolling/doc/ros2_controllers/admittance_controller/doc/userdoc.html
+  -->
+  <arg name="arm" default="rarm" description="Nextage arm to configure">
+    <choice value="rarm"/>
+    <choice value="larm"/>
+  </arg>
+  <arg name="controller_manager" default="/controller_manager"/>
+  <arg name="params_file"
+       default="$(find-pkg-share nextage_tutorials)/config/nextage_admittance.yaml"/>
+  <arg name="inactive" default="true"/>
+  <arg name="gravity_params_file" default=""
+       description="Optional generated .admittance.yaml; requires bias-only corrected hardware readings"/>
+  <arg name="controller_manager_timeout" default="15.0"/>
+
+  <let name="activation_args" value="--inactive" if="$(var inactive)"/>
+  <let name="activation_args" value="" unless="$(var inactive)"/>
+  <let name="gravity_args" value=""/>
+  <let name="gravity_args" value="--param-file $(var gravity_params_file)"
+       if="$(eval &quot;'$(var gravity_params_file)' != ''&quot;)"/>
+  <node pkg="controller_manager" exec="spawner"
+        name="$(var arm)_admittance_spawner" output="screen"
+        args="$(var arm)_admittance_controller --controller-manager $(var controller_manager) --param-file $(var params_file) $(var gravity_args) --controller-manager-timeout $(var controller_manager_timeout) $(var activation_args)"/>
+</launch>

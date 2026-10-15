@@ -1,0 +1,67 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- This launch MOVES THE REAL ROBOT via the existing fullbody controller.
+       Start nextage.launch.xml and the ROS 1 action bridge first.
+       Use an unloaded, collision-free starting posture and stop other command sources.
+       Nine small relative waist/wrist motions; joint limits checked, no collision planning.
+       The opposite arm/head joint angles are held; waist motion moves their bases too.
+       On success: return to start, identify parameters and save YAML.
+       On failure: stop the sequence, cancel an outstanding goal, do not auto-return.
+       Identification stays running and publishes compensated wrenches after success.
+  -->
+  <arg name="arm" default="rarm">
+    <choice value="rarm"/>
+    <choice value="larm"/>
+  </arg>
+  <let name="ft_namespace" value="right_ft"/>
+  <let name="frame" value="RARM_FTSENSOR_SENSOR_Link"/>
+  <group if="$(eval &quot;'$(var arm)' == 'larm'&quot;)" scoped="false">
+    <let name="ft_namespace" value="left_ft"/>
+    <let name="frame" value="LARM_FTSENSOR_SENSOR_Link"/>
+  </group>
+  <arg name="input_topic" default="/$(var ft_namespace)/force_torque"/>
+  <arg name="output_topic" default="/$(var ft_namespace)/force_torque_compensated"/>
+  <arg name="sensor_frame" default="$(var frame)"/>
+  <arg name="base_frame" default="WAIST"/>
+  <arg name="joint_states_topic" default="/joint_states"/>
+  <arg name="action_name" default="/fullbody_controller/follow_joint_trajectory_action"/>
+  <arg name="output_file" default="$(env HOME)/.ros/nextage/$(var arm)_ft_payload.yaml"/>
+  <arg name="poses_file" default="$(find-pkg-share nextage_tutorials)/config/ft_calibration_poses.yaml"/>
+  <arg name="urdf_file" default="$(find-pkg-share nextage_tutorials)/urdf/JSKNextageOpenGripper.urdf"/>
+  <arg name="move_duration" default="5.0"/>
+  <arg name="settle_time" default="2.0"/>
+  <arg name="sample_count" default="200"/>
+  <arg name="wrench_sign" default="1.0"/>
+  <arg name="force_std_limit" default="0.2"/>
+  <arg name="torque_std_limit" default="0.02"/>
+  <arg name="max_force_rms" default="0.3"/>
+  <arg name="max_torque_rms" default="0.03"/>
+
+  <node pkg="nextage_tutorials" exec="ft_payload_identification.py"
+        name="$(var arm)_ft_identification" output="screen">
+    <param name="arm" value="$(var arm)"/>
+    <param name="input_topic" value="$(var input_topic)"/>
+    <param name="output_topic" value="$(var output_topic)"/>
+    <param name="sensor_frame" value="$(var sensor_frame)"/>
+    <param name="base_frame" value="$(var base_frame)"/>
+    <param name="joint_states_topic" value="$(var joint_states_topic)"/>
+    <param name="output_file" value="$(var output_file)"/>
+    <param name="sample_count" value="$(var sample_count)"/>
+    <param name="wrench_sign" value="$(var wrench_sign)"/>
+    <param name="force_std_limit" value="$(var force_std_limit)"/>
+    <param name="torque_std_limit" value="$(var torque_std_limit)"/>
+    <param name="max_force_rms" value="$(var max_force_rms)"/>
+    <param name="max_torque_rms" value="$(var max_torque_rms)"/>
+  </node>
+  <node pkg="nextage_tutorials" exec="ft_calibration_motion.py"
+        name="$(var arm)_ft_calibration_motion" output="screen">
+    <param name="arm" value="$(var arm)"/>
+    <param name="action_name" value="$(var action_name)"/>
+    <param name="joint_states_topic" value="$(var joint_states_topic)"/>
+    <param name="identification_node" value="/$(var arm)_ft_identification"/>
+    <param name="poses_file" value="$(var poses_file)"/>
+    <param name="urdf_file" value="$(var urdf_file)"/>
+    <param name="move_duration" value="$(var move_duration)"/>
+    <param name="settle_time" value="$(var settle_time)"/>
+  </node>
+</launch>

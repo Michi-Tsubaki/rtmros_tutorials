@@ -1,0 +1,82 @@
+# Nextage admittance settings for a ros2_control hardware integration.
+# FT names below are integration names, NOT discovered hardware names.
+# Replace them with the prefixes reported by ros2 control list_hardware_interfaces.
+# Gains are starting values, not validated on the physical robot.
+# Zero payload is a placeholder: calibrate force bias and set actual CoG/weight.
+# Do not reuse ft_left/right.yaml mass values: those belong to a different compensator.
+
+/**/rarm_admittance_controller:
+  ros__parameters:
+    type: admittance_controller/AdmittanceController
+    joints: [RARM_JOINT0, RARM_JOINT1, RARM_JOINT2, RARM_JOINT3, RARM_JOINT4, RARM_JOINT5]
+    command_interfaces: [position]
+    state_interfaces: [position]
+    chainable_command_interfaces: [position, velocity]
+    kinematics:
+      plugin_name: kinematics_interface_kdl/KinematicsInterfaceKDL
+      plugin_package: kinematics_interface
+      base: CHEST_JOINT0_Link
+      tip: RARM_FTSENSOR_SENSOR_Link
+      alpha: 0.01
+    ft_sensor:
+      name: right_ft_sensor
+      frame:
+        id: RARM_FTSENSOR_SENSOR_Link
+      filter_coefficient: 0.05
+    control:
+      frame:
+        id: RARM_FTSENSOR_SENSOR_Link
+    fixed_world_frame:
+      frame:
+        id: WAIST
+    gravity_compensation:
+      frame:
+        id: RARM_FTSENSOR_SENSOR_Link
+      CoG:
+        pos: [0.0, 0.0, 0.0]
+        force: 0.0
+    admittance:
+      selected_axes: [true, true, true, false, false, false]
+      mass: [10.0, 10.0, 10.0, 1.0, 1.0, 1.0]
+      damping_ratio: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+      stiffness: [200.0, 200.0, 200.0, 20.0, 20.0, 20.0]
+      joint_damping: 5.0
+    enable_parameter_update_without_reactivation: false
+
+/**/larm_admittance_controller:
+  ros__parameters:
+    type: admittance_controller/AdmittanceController
+    joints: [LARM_JOINT0, LARM_JOINT1, LARM_JOINT2, LARM_JOINT3, LARM_JOINT4, LARM_JOINT5]
+    command_interfaces: [position]
+    state_interfaces: [position]
+    chainable_command_interfaces: [position, velocity]
+    kinematics:
+      plugin_name: kinematics_interface_kdl/KinematicsInterfaceKDL
+      plugin_package: kinematics_interface
+      base: CHEST_JOINT0_Link
+      tip: LARM_FTSENSOR_SENSOR_Link
+      alpha: 0.01
+    ft_sensor:
+      name: left_ft_sensor
+      frame:
+        id: LARM_FTSENSOR_SENSOR_Link
+      filter_coefficient: 0.05
+    control:
+      frame:
+        id: LARM_FTSENSOR_SENSOR_Link
+    fixed_world_frame:
+      frame:
+        id: WAIST
+    gravity_compensation:
+      frame:
+        id: LARM_FTSENSOR_SENSOR_Link
+      CoG:
+        pos: [0.0, 0.0, 0.0]
+        force: 0.0
+    admittance:
+      selected_axes: [true, true, true, false, false, false]
+      mass: [10.0, 10.0, 10.0, 1.0, 1.0, 1.0]
+      damping_ratio: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+      stiffness: [200.0, 200.0, 200.0, 20.0, 20.0, 20.0]
+      joint_damping: 5.0
+    enable_parameter_update_without_reactivation: false

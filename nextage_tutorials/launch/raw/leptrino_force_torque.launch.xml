@@ -8,6 +8,7 @@
   <arg name="left_frame_id" default="LARM_FTSENSOR_SENSOR_Link"/>
 
   <include file="$(find-pkg-share leptrino_force_torque)/launch/leptrino.launch.xml">
+    <arg name="respawn" value="true"/>
     <arg name="comport" value="$(var right_comport)"/>
     <arg name="namespace" value="$(var right_namespace)"/>
     <arg name="node_name" value="leptrino_force_torque"/>
@@ -15,6 +16,7 @@
   </include>
 
   <include file="$(find-pkg-share leptrino_force_torque)/launch/leptrino.launch.xml">
+    <arg name="respawn" value="true"/>
     <arg name="comport" value="$(var left_comport)"/>
     <arg name="namespace" value="$(var left_namespace)"/>
     <arg name="node_name" value="leptrino_force_torque"/>

@@ -13,13 +13,16 @@
   <arg name="enable_confidence" default="false"/>
   <arg name="enable_gyro" default="false"/>
   <arg name="enable_accel" default="false"/>
+  <!-- L515 rejects 640x480x10; use supported 30 Hz profiles. -->
+  <arg name="depth_profile" default="640x480x30"/>
+  <arg name="color_profile" default="640x480x30"/>
   <arg name="align_depth" default="true"/>
   <arg name="publish_tf" default="true"/>
   <arg name="tf_publish_rate" default="0"/>
   <arg name="base_frame_id" default="link"/>
   <arg name="log_level" default="info"/>
 
-  <node pkg="realsense2_camera" exec="realsense2_camera_node"
+  <node respawn="true" respawn_delay="3.0" pkg="realsense2_camera" exec="realsense2_camera_node"
         namespace="$(var camera_namespace)" name="$(var camera_name)"
         output="screen" args="--ros-args --log-level $(var log_level)">
     <param name="camera_name" type="str" value="$(var camera_name)"/>
@@ -32,8 +35,8 @@
     <param name="enable_infra" type="bool" value="$(var enable_infra)"/>
     <param name="enable_infra1" type="bool" value="false"/>
     <param name="enable_infra2" type="bool" value="false"/>
-    <param name="depth_module.profile" type="str" value="640x480x30"/>
-    <param name="rgb_camera.profile" type="str" value="640x480x30"/>
+    <param name="depth_module.profile" type="str" value="$(var depth_profile)"/>
+    <param name="rgb_camera.profile" type="str" value="$(var color_profile)"/>
     <param name="enable_gyro" type="bool" value="$(var enable_gyro)"/>
     <param name="enable_accel" type="bool" value="$(var enable_accel)"/>
     <param name="enable_sync" type="bool" value="true"/>

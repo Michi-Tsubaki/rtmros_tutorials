@@ -1,0 +1,15 @@
+# Radians relative to the measured starting fullbody posture.
+# Clear the workspace first: these are joint-space motions, not collision-planned paths.
+# All 15 joints are sent via fullbody_controller. Head and opposite arm are held.
+# The waist yaw contributes no gravity excitation by itself; the two wrist axes do.
+offset_joints: [CHEST_JOINT0, '{ARM}_JOINT4', '{ARM}_JOINT5']
+offsets:
+  - [ 0.00,  0.00,  0.00]
+  - [ 0.10,  0.35,  0.00]
+  - [ 0.00, -0.35,  0.00]
+  - [-0.10,  0.00,  0.35]
+  - [ 0.00,  0.00, -0.35]
+  - [ 0.10,  0.35,  0.35]
+  - [ 0.00, -0.35,  0.35]
+  - [-0.10, -0.35, -0.35]
+  - [ 0.00,  0.35, -0.35]

@@ -32,8 +32,12 @@ install(PROGRAMS
   scripts/d405_link_interactive_marker.py
   scripts/ft_gravity_calib.py
   scripts/ft_gravity_compensate.py
+  scripts/ft_zero_calibration.py
+  scripts/ft_payload_identification.py
+  scripts/ft_calibration_motion.py
   scripts/gripper_joint_state_publisher.py
   scripts/head_track_rarm_joint5.py
+  scripts/mygeneralist_nextage.py
   scripts/nextage_topic_bridge.sh
   scripts/viser_teleope.py
   DESTINATION lib/${PROJECT_NAME}

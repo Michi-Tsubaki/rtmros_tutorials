@@ -476,15 +476,15 @@ Visualization Manager:
           Value: true
         rhand_bottom_spacer3300a_1:
           Value: true
-        rhand_camera_RARM_CAMERA_Link:
+        lhand_camera_LARM_CAMERA_Link:
           Value: true
-        rhand_camera_color_frame:
+        lhand_camera_color_frame:
           Value: true
-        rhand_camera_color_optical_frame:
+        lhand_camera_color_optical_frame:
           Value: true
-        rhand_camera_depth_frame:
+        lhand_camera_depth_frame:
           Value: true
-        rhand_camera_depth_optical_frame:
+        lhand_camera_depth_optical_frame:
           Value: true
         rhand_finger_11:
           Value: true
@@ -585,13 +585,13 @@ Visualization Manager:
                     RARM_JOINT4_Link:
                       RARM_JOINT5_Link:
                         RARM_CAMERA_Link:
-                          rhand_camera_RARM_CAMERA_Link:
+                          lhand_camera_LARM_CAMERA_Link:
                             {}
-                          rhand_camera_color_frame:
-                            rhand_camera_color_optical_frame:
+                          lhand_camera_color_frame:
+                            lhand_camera_color_optical_frame:
                               {}
-                          rhand_camera_depth_frame:
-                            rhand_camera_depth_optical_frame:
+                          lhand_camera_depth_frame:
+                            lhand_camera_depth_optical_frame:
                               {}
                         RARM_FTSENSOR_SPACER_Link:
                           RARM_NEXTAGE_TO_FTSENSOR_Link:
@@ -621,28 +621,42 @@ Visualization Manager:
       Max Value: 1
       Median window: 5
       Min Value: 0
-      Name: Image
+      Name: Top Camera (L515)
       Normalize Range: true
       Topic:
         Depth: 5
         Durability Policy: Volatile
         History Policy: Keep Last
-        Reliability Policy: Reliable
-        Value: /task_camera/image_raw
+        Reliability Policy: Best Effort
+        Value: /top_camera/color/image_raw
       Value: true
     - Class: rviz_default_plugins/Image
       Enabled: true
       Max Value: 1
       Median window: 5
       Min Value: 0
-      Name: Image
+      Name: Left Hand Camera (D405)
       Normalize Range: true
       Topic:
         Depth: 5
         Durability Policy: Volatile
         History Policy: Keep Last
-        Reliability Policy: Reliable
-        Value: /rhand_camera/color/image_rect_raw
+        Reliability Policy: Best Effort
+        Value: /lhand_camera/color/image_rect_raw
+      Value: true
+    - Class: rviz_default_plugins/Image
+      Enabled: true
+      Max Value: 1
+      Median window: 5
+      Min Value: 0
+      Name: Right Hand Camera (Webcam)
+      Normalize Range: true
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Best Effort
+        Value: /rhand_camera/color/image_raw
       Value: true
     - Alpha: 1
       Autocompute Intensity Bounds: true
@@ -673,7 +687,7 @@ Visualization Manager:
         Durability Policy: Volatile
         History Policy: Keep Last
         Reliability Policy: Reliable
-        Value: /rhand_camera/depth/color/points
+        Value: /lhand_camera/depth/color/points
       Use Fixed Frame: true
       Use rainbow: true
       Value: true
