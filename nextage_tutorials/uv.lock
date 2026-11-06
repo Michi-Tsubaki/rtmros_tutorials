@@ -228,7 +228,6 @@ dependencies = [
     { name = "numpy" },
     { name = "python-fcl" },
     { name = "scikit-robot" },
-    { name = "viser" },
 ]
 
 [package.metadata]
@@ -236,7 +235,6 @@ requires-dist = [
     { name = "numpy", specifier = "<2" },
     { name = "python-fcl" },
     { name = "scikit-robot", editable = "src/scikit-robot" },
-    { name = "viser" },
 ]
 
 [[package]]
