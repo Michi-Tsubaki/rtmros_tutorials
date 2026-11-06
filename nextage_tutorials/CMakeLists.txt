@@ -13,10 +13,11 @@ find_package(sensor_msgs REQUIRED)
 find_package(trajectory_msgs REQUIRED)
 find_package(hardware_interface REQUIRED)
 find_package(pluginlib REQUIRED)
+find_package(std_msgs REQUIRED)
 
 add_library(nextage_topic_system SHARED src/nextage_topic_system.cpp)
 target_compile_features(nextage_topic_system PUBLIC cxx_std_17)
-ament_target_dependencies(nextage_topic_system hardware_interface pluginlib rclcpp sensor_msgs geometry_msgs trajectory_msgs)
+ament_target_dependencies(nextage_topic_system hardware_interface pluginlib rclcpp sensor_msgs geometry_msgs trajectory_msgs std_msgs)
 pluginlib_export_plugin_description_file(hardware_interface nextage_hardware.xml)
 install(TARGETS nextage_topic_system LIBRARY DESTINATION lib)
 
@@ -48,6 +49,7 @@ install(PROGRAMS
   scripts/mygeneralist_nextage.py
   scripts/nextage_topic_bridge.sh
   scripts/viser_teleope.py
+  scripts/touch_hid_teleop.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
