@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 <launch>
   <arg name="log_level" default="info"/>
+  <arg name="debug_prefix" default=""/>
 
   <!--
     dynamic_bridge auto-discovers both the required topics and the controllers'
@@ -21,6 +22,7 @@
     pkg="ros1_bridge"
     exec="dynamic_bridge"
     name="nextage_dynamic_bridge"
+    launch-prefix="$(var debug_prefix)"
     output="screen"
     args="__name:=nextage_dynamic_bridge --ros-args --log-level $(var log_level)"/>
 
