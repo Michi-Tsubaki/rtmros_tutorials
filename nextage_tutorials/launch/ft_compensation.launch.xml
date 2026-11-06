@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="arm" default="larm"><choice value="larm"/><choice value="rarm"/></arg>
+  <let name="side" value="left"/>
+  <let name="frame" value="LARM_FTSENSOR_SENSOR_Link"/>
+  <group if="$(eval &quot;'$(var arm)' == 'rarm'&quot;)" scoped="false">
+    <let name="side" value="right"/>
+    <let name="frame" value="RARM_FTSENSOR_SENSOR_Link"/>
+  </group>
+  <arg name="calibration_file" default="$(env HOME)/.ros/nextage/$(var arm)_ft_payload.yaml"/>
+  <node pkg="nextage_tutorials" exec="ft_payload_identification.py" name="$(var arm)_ft_compensation" output="screen">
+    <param name="arm" value="$(var arm)"/>
+    <param name="input_topic" value="/$(var side)_ft/force_torque"/>
+    <param name="output_topic" value="/$(var side)_ft/force_torque_compensated"/>
+    <param name="sensor_frame" value="$(var frame)"/>
+    <param name="output_file" value="$(var calibration_file)"/>
+    <param name="load_file" value="$(var calibration_file)"/>
+  </node>
+</launch>

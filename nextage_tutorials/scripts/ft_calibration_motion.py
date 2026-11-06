@@ -100,6 +100,8 @@ class CalibrationMotion(Node):
                 self.states[name] = (value, now)
 
     def positions(self):
+        if self.count_publishers('/fullbody_controller/command'):
+            raise RuntimeError('Another fullbody command publisher is running; stop teleoperation/admittance first')
         now = time.monotonic()
         if any(name not in self.states or now-self.states[name][1] > self.p['freshness_timeout']
                for name in JOINTS):

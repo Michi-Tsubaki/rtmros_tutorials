@@ -3,6 +3,26 @@
 import numpy as np
 
 
+def load_calibration(path, sensor_frame, base_frame):
+    from pathlib import Path
+    import yaml
+    result = yaml.safe_load(Path(path).expanduser().read_text())
+    if not isinstance(result, dict):
+        raise ValueError('Invalid calibration file')
+    if result.get('sensor_frame') != sensor_frame or result.get('base_frame') != base_frame:
+        raise ValueError('Calibration frames do not match this sensor')
+    if result.get('wrench_sign') not in (-1.0, 1.0):
+        raise ValueError('Invalid calibration polarity')
+    mass = result.get('mass', float('nan'))
+    if not np.isfinite(mass) or mass <= 0:
+        raise ValueError('Invalid payload mass')
+    for name in ('center_of_mass', 'force_bias', 'torque_bias'):
+        value = np.asarray(result.get(name), dtype=float)
+        if value.shape != (3,) or not np.isfinite(value).all():
+            raise ValueError(f'Invalid calibration {name}')
+    return result
+
+
 def gravity_from_quaternion(q):
     q = np.asarray(q, dtype=float)
     if q.shape != (4,) or not np.isfinite(q).all() or np.linalg.norm(q) < 1e-9:
@@ -43,7 +63,7 @@ def fit_payload(gravity, wrench, max_condition=200.0,
         raise ValueError(f'Fit residual too large (N, Nm): {rms.tolist()}')
     mass = float(solution[0])
     if mass <= 1e-5:
-        raise ValueError('Payload mass is non-positive or too small to identify CoG; '
+        raise ValueError(f'Payload mass {mass:.6f} kg is non-positive or too small to identify CoG; '
                          'check sensor polarity, orientation diversity and unloaded tare')
     return {'mass': mass, 'center_of_mass': (solution[4:7] / mass).tolist(),
             'force_bias': solution[1:4].tolist(), 'torque_bias': solution[7:].tolist(),

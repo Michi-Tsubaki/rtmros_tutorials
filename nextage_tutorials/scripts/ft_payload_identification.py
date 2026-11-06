@@ -34,7 +34,7 @@ class PayloadIdentification(Node):
             'arm': 'rarm', 'input_topic': '/right_ft/force_torque',
             'output_topic': '/right_ft/force_torque_compensated',
             'sensor_frame': 'RARM_FTSENSOR_SENSOR_Link', 'base_frame': 'WAIST',
-            'joint_states_topic': '/joint_states', 'output_file': '',
+            'joint_states_topic': '/joint_states', 'output_file': '', 'load_file': '',
             'sample_count': 200, 'capture_timeout': 15.0,
             'force_std_limit': 0.2, 'torque_std_limit': 0.02,
             'max_force_rms': 0.3, 'max_torque_rms': 0.03,
@@ -66,6 +66,11 @@ class PayloadIdentification(Node):
         self.collecting = False
         self.status = 'idle'
         self.calibration = None
+        if p['load_file']:
+            from nextage_tutorials.ft_payload import load_calibration
+            self.calibration = load_calibration(p['load_file'], p['sensor_frame'], p['base_frame'])
+            self.p['wrench_sign'] = self.calibration['wrench_sign']
+            self.get_logger().info(f'Loaded payload compensation from {p["load_file"]}')
         self.last_valid_wrench = 0.0
         self.publisher = self.create_publisher(WrenchStamped, p['output_topic'], 10)
         self.create_subscription(JointState, p['joint_states_topic'], self.on_joints,
@@ -95,6 +100,8 @@ class PayloadIdentification(Node):
         try:
             if self.collecting:
                 raise ValueError('Capture already in progress')
+            if self.p['load_file']:
+                raise ValueError('Loaded compensation is read-only; use a separate calibration run')
             self.anchor = self.positions()
             if time.monotonic()-self.last_valid_wrench > self.p['freshness_timeout']:
                 raise ValueError('No fresh, correctly framed wrench with timestamped TF')
@@ -203,6 +210,10 @@ class PayloadIdentification(Node):
         try:
             if self.collecting:
                 raise ValueError('Capture is still in progress')
+            # Keep evidence even if a polarity/diversity/residual check rejects the fit.
+            self.write_yaml(Path(self.p['output_file']).expanduser().with_suffix('.samples.yaml'),
+                            {'sensor_frame': self.p['sensor_frame'], 'base_frame': self.p['base_frame'],
+                             'wrench_sign': self.p['wrench_sign'], 'poses': self.poses})
             result = fit_payload([pose['gravity'] for pose in self.poses],
                                  [pose['wrench'] for pose in self.poses],
                                  self.p['max_condition'], self.p['max_force_rms'],

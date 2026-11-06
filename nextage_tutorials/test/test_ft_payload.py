@@ -1,8 +1,11 @@
 import unittest
+import tempfile
+from pathlib import Path
+import yaml
 
 import numpy as np
 
-from nextage_tutorials.ft_payload import compensate, fit_payload, gravity_from_quaternion
+from nextage_tutorials.ft_payload import compensate, fit_payload, gravity_from_quaternion, load_calibration
 from nextage_tutorials.ft_zero import estimate_bias
 
 
@@ -50,6 +53,20 @@ class PayloadTest(unittest.TestCase):
         np.testing.assert_allclose(gravity_from_quaternion([0, 0, 0, 1]), [0, 0, -9.80665])
         np.testing.assert_allclose(gravity_from_quaternion([0, np.sqrt(0.5), 0, np.sqrt(0.5)]),
                                    [-9.80665, 0, 0], atol=1e-12)
+
+    def test_saved_calibration_validates_frames_and_finite_values(self):
+        result = fit_payload(self.g, self.w)
+        result.update(sensor_frame='sensor', base_frame='base', wrench_sign=-1.0)
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / 'payload.yaml'
+            path.write_text(yaml.safe_dump(result))
+            self.assertEqual(load_calibration(path, 'sensor', 'base')['wrench_sign'], -1.0)
+            with self.assertRaisesRegex(ValueError, 'frames'):
+                load_calibration(path, 'other_sensor', 'base')
+            result['force_bias'][0] = float('nan')
+            path.write_text(yaml.safe_dump(result))
+            with self.assertRaisesRegex(ValueError, 'force_bias'):
+                load_calibration(path, 'sensor', 'base')
 
 
 if __name__ == '__main__':

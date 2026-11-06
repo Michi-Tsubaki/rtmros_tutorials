@@ -3,8 +3,8 @@
   <!-- This launch MOVES THE REAL ROBOT via the existing fullbody controller.
        Start nextage.launch.xml and the ROS 1 action bridge first.
        Use an unloaded, collision-free starting posture and stop other command sources.
-       Nine small relative waist/wrist motions; joint limits checked, no collision planning.
-       The opposite arm/head joint angles are held; waist motion moves their bases too.
+       Nine small relative wrist motions; joint limits checked, no collision planning.
+       The waist, opposite arm and head joint angles are held.
        On success: return to start, identify parameters and save YAML.
        On failure: stop the sequence, cancel an outstanding goal, do not auto-return.
        Identification stays running and publishes compensated wrenches after success.

@@ -1,0 +1,11 @@
+/**/larm_admittance_controller:
+  ros__parameters:
+    gravity_compensation:
+      frame:
+        id: LARM_FTSENSOR_SENSOR_Link
+      CoG:
+        pos:
+        - 0.0004627589791669622
+        - 0.0037592591879627795
+        - 0.04345797097499494
+        force: 2.517621420923957

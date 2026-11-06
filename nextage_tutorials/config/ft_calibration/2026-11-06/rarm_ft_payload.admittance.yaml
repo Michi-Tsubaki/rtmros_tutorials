@@ -1,0 +1,11 @@
+/**/rarm_admittance_controller:
+  ros__parameters:
+    gravity_compensation:
+      frame:
+        id: RARM_FTSENSOR_SENSOR_Link
+      CoG:
+        pos:
+        - -0.0019072950003224515
+        - -0.0038163341180347506
+        - 0.03306122164640281
+        force: 2.2765512539519954

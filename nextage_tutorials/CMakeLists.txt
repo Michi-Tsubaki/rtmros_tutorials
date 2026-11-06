@@ -11,6 +11,14 @@ find_package(rclcpp REQUIRED)
 find_package(roseus QUIET)
 find_package(sensor_msgs REQUIRED)
 find_package(trajectory_msgs REQUIRED)
+find_package(hardware_interface REQUIRED)
+find_package(pluginlib REQUIRED)
+
+add_library(nextage_topic_system SHARED src/nextage_topic_system.cpp)
+target_compile_features(nextage_topic_system PUBLIC cxx_std_17)
+ament_target_dependencies(nextage_topic_system hardware_interface pluginlib rclcpp sensor_msgs geometry_msgs trajectory_msgs)
+pluginlib_export_plugin_description_file(hardware_interface nextage_hardware.xml)
+install(TARGETS nextage_topic_system LIBRARY DESTINATION lib)
 
 find_program(IRTEUSGL_EXECUTABLE irteusgl
   HINTS "$ENV{EUSDIR}/Linux64/bin")
@@ -52,6 +60,7 @@ install(DIRECTORY launch/
   DESTINATION share/${PROJECT_NAME}/launch
   FILES_MATCHING
     PATTERN "*.launch.xml"
+    PATTERN "*.launch.py"
 )
 
 ament_package()

@@ -1,0 +1,5 @@
+<library path="nextage_topic_system">
+  <class name="nextage_tutorials/TopicSystem" type="nextage_tutorials::TopicSystem" base_class_type="hardware_interface::SystemInterface">
+    <description>Bounded single-arm hrpsys trajectory and compensated wrench adapter.</description>
+  </class>
+</library>

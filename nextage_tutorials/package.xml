@@ -21,6 +21,8 @@
   <depend>control_msgs</depend>
   <exec_depend>dynamixel_detachable_hand</exec_depend>
   <depend>geometry_msgs</depend>
+  <depend>hardware_interface</depend>
+  <depend>pluginlib</depend>
   <exec_depend>image_view</exec_depend>
   <exec_depend>interactive_markers</exec_depend>
   <exec_depend>leptrino_force_torque</exec_depend>

@@ -55,7 +55,7 @@ ros2 launch nextage_tutorials nextage.launch.xml
 
 `ft_payload_calibration.launch.xml` は **実機を動かします**。既存の
 `nextage.launch.xml` とROS 1ブリッジを起動し、手先を無接触・無負荷にして、
-腰と手首の周囲に動作空間を確保してください。他の操作ノードからの指令は止めます。
+手首の周囲に動作空間を確保してください。他の操作ノードからの指令は止めます。
 関節リミットは確認しますが、衝突回避プランニングは行いません。
 
 ```bash
@@ -69,8 +69,8 @@ ros2 launch nextage_tutorials ft_payload_calibration.launch.xml arm:=rarm
 処理は2つのスクリプトに分かれています。
 
 - `scripts/ft_calibration_motion.py`: `/fullbody_controller/follow_joint_trajectory_action`
-  に全15関節の目標を送り、腰と選択腕の手首2軸だけを変えます。頭部と反対腕の
-  関節角は開始時の値に保持します（腰を動かすため、空間上の位置は変わります）。
+  に全15関節の目標を送り、選択腕の手首2軸だけを変えます。腰・頭部と反対腕の
+  関節角は開始時の値に保持します。
   各移動の成功と2秒間の静止を確認してから、同定ノードに収集を依頼します。
 - `scripts/ft_payload_identification.py`: 各姿勢で200サンプルを収集します。
   センサ時刻のTFからセンサ座標系の重力を求め、全姿勢を使って
@@ -78,7 +78,7 @@ ros2 launch nextage_tutorials ft_payload_calibration.launch.xml arm:=rarm
   力・トルクのバイアス6成分、質量、センサ原点からの重心位置を同定します。
 
 既定の9姿勢は `config/ft_calibration_poses.yaml` の開始姿勢からの相対角度です。
-腰は最大±0.10 rad、手首2軸は最大±0.35 rad動かします。1移動は最低5秒です。
+手首2軸は最大±0.35 rad動かし、腰は動かしません。1移動は最低5秒です。
 全部の計測が終わると開始姿勢に戻ってから同定します。途中で失敗した場合は
 後続の移動を送らず、実行中のactionのキャンセルを要求します。失敗時に
 自動で開始姿勢へ戻る動作は行いません。
@@ -122,3 +122,87 @@ ros2 launch nextage_tutorials admittance.launch.xml arm:=rarm \
 1姿勢だけのゼロ点調整には `ft_zero_calibration.launch.xml` もありますが、
 姿勢が変わる用途では上記の複数姿勢キャリブレーションを使います。
 キャリブレーション中にadmittance制御を同時に有効にしないでください。
+
+### hrpsysトピック経由の実機接続（2026-11-06検証）
+
+`admittance_bringup.launch.py` は `nextage_tutorials/TopicSystem` を使って、
+腕の6関節と補償済み力覚6成分を `/admittance/controller_manager` に公開します。
+既存の `/joint_states` と `/fullbody_controller/command` のROS 1ブリッジを使用します。
+元の `admittance.launch.xml` は既存managerへの登録用として残しています。
+このアダプタは片腕ずつの小変位試験用です。50 Hzで制御計算し、軌道送信は最大25 Hz、
+目標時間は100 msです。通信を介した制御なのでハードリアルタイムではありません。
+
+#### 左手だけ起動
+
+前提：ROS 1ブリッジ・力センサ起動済み、校正済み。各ターミナルで
+`source ~/colcon_ws/install/setup.bash` を実行してください。
+Touch teleopと他の腕指令ノードは停止し、左右のbringupを同時起動しないでください。
+同じ腕の補償ノードが既に動いている場合はターミナル1を省略します。
+
+```bash
+# ターミナル1：保存済みの重力補償
+ros2 launch nextage_tutorials ft_compensation.launch.xml arm:=larm
+# ターミナル2：左腕のadmittance制御を有効にして起動
+ros2 launch nextage_tutorials admittance_bringup.launch.py arm:=larm inactive:=false
+# 停止（別ターミナル）
+ros2 control switch_controllers -c /admittance/controller_manager --deactivate larm_admittance_controller --strict
+```
+
+#### 右手だけ起動
+
+前提は左手と同じです。腕を切り替えるときは、先に起動済みのbringupをCtrl-Cで終了します。
+
+```bash
+# ターミナル1：保存済みの重力補償
+ros2 launch nextage_tutorials ft_compensation.launch.xml arm:=rarm
+# ターミナル2：右腕のadmittance制御を有効にして起動
+ros2 launch nextage_tutorials admittance_bringup.launch.py arm:=rarm inactive:=false
+# 停止（別ターミナル）
+ros2 control switch_controllers -c /admittance/controller_manager --deactivate rarm_admittance_controller --strict
+```
+
+#### 再校正が必要な場合
+
+補償ノードとbringupを終了してから実行します（右手は `arm:=rarm`）。
+完了後に校正launchをCtrl-Cで終了し、上記の手順で起動します。
+
+```bash
+ros2 launch nextage_tutorials ft_payload_calibration.launch.xml arm:=larm wrench_sign:=-1.0
+```
+
+現在の取り付けでは両センサとも `wrench_sign:=-1.0` で重力との関係を確認しました。
+取り付け・工具・配線を変えた場合は再確認・再校正してください。
+保存先は `~/.ros/nextage/{larm,rarm}_ft_payload.yaml` です。
+今回の実測値は `config/ft_calibration/2026-11-06/` にも保存しています。
+同じ取り付け・工具構成で保存値を直接使う場合は、補償launchに
+`calibration_file:=$(ros2 pkg prefix --share nextage_tutorials)/config/ft_calibration/2026-11-06/larm_ft_payload.yaml`
+を追加します（右手はファイル名の `larm` を `rarm` に変更）。
+補償ノードは保存された座標系・質量・符号・有限値を検証して読み込み、
+`/{left,right}_ft/force_torque_compensated` に出力します。
+重力はこの段階で除去するため、bringup側のCoG.forceは0に固定しています。
+同定に失敗した場合も `.samples.yaml` に測定データを残します。
+
+既定では**センサ座標Xの並進1軸のみ**を有効にします。ハードウェアアダプタは
+起動時の関節角から±0.10 rad、指令速度0.10 rad/s、実測からの目標先行0.01 radを上限とし、
+関節リミット、腰の移動、過大な力（各軸15 N / 1.5 Nm）、250 msを超えるデータ断、
+別のfullbody指令publisherを検出すると停止します。停止後はbringupを再起動してください。
+停止時に既に受理された最後の100 ms軌道は実行され得ます。
+別経路のaction指令やROS 1側の操作との排他は保証しないので、他の操作を同時に行わないでください。
+外部障害物の衝突回避は行いません。
+
+力覚ドライバには再接続時のDTR設定、シリアルの排他open、2秒測定断での終了を追加しています。
+既存のrespawn設定により、USB復帰後に再接続します。別launchで同じセンサを重複起動しないでください。
+
+実機では左右それぞれ9姿勢から同定し、推定質量は左0.2567 kg、右0.2321 kgでした。
+センサXの目標力オフセット0.5 Nで、左約2.62 mm・右約2.46 mmの手先変位と
+ゼロ指令への復帰を確認しました。試験後はinactiveです。
+無接触時の補償後平均力は各成分約0.21 N以下ですが、微小力を精密に扱う用途では
+残差・温度ドリフト・工具の変化をさらに評価してください。
+
+検証:
+
+```bash
+python3 -m unittest discover -s test -p test_ft_payload.py
+# 実機のdomainとは別のROS_DOMAIN_ID=179で模擬関節・力を使用。
+python3 test/check_admittance_transport.py
+```
