@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- One-arm ros2_control transport; defaults to inactive commissioning mode. -->
+  <arg name="arm" default="larm">
+    <choice value="larm"/>
+    <choice value="rarm"/>
+  </arg>
+  <arg name="inactive" default="true">
+    <choice value="true"/>
+    <choice value="false"/>
+  </arg>
+  <arg name="require_enable" default="false">
+    <choice value="true"/>
+    <choice value="false"/>
+  </arg>
+
+  <let name="controller" value="$(var arm)_admittance_controller"/>
+  <let name="activation_args" value="--inactive" if="$(var inactive)"/>
+  <let name="activation_args" value="" unless="$(var inactive)"/>
+
+  <node pkg="robot_state_publisher" exec="robot_state_publisher"
+        namespace="admittance" name="control_description" output="screen">
+    <param name="robot_description" type="str"
+           value="$(command '$(find-pkg-prefix nextage_tutorials)/lib/nextage_tutorials/admittance_robot_description.py --arm $(var arm) --require-enable $(var require_enable)')"/>
+    <remap from="joint_states" to="/joint_states"/>
+    <remap from="/tf" to="/admittance/model_tf"/>
+    <remap from="/tf_static" to="/admittance/model_tf_static"/>
+  </node>
+  <node pkg="controller_manager" exec="ros2_control_node"
+        namespace="admittance" output="screen">
+    <param name="update_rate" value="50"/>
+    <param name="$(var controller).type" value="admittance_controller/AdmittanceController"/>
+  </node>
+  <node pkg="controller_manager" exec="spawner" output="screen"
+        args="$(var controller) -c /admittance/controller_manager --param-file $(find-pkg-share nextage_tutorials)/config/nextage_admittance.yaml --param-file $(find-pkg-share nextage_tutorials)/config/nextage_admittance_bringup.yaml --controller-manager-timeout 30 $(var activation_args)"/>
+</launch>
