@@ -11,6 +11,8 @@ keywords = ["NEXTAGE OPEN", "ROS 2", "robotics", "tutorials"]
 dependencies = [
     "numpy<2",
     "scikit-robot",
+    "viser",
+    "python-fcl",
 ]
 
 [project.urls]
