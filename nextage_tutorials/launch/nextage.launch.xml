@@ -47,7 +47,7 @@
   <arg name="publish_gripper_joint_states" default="true"/>
   <arg name="gripper_joint_state_rate" default="10.0"/>
   <arg name="gripper_position" default="0.05"/>
-  <arg name="launch_rviz" default="true"/>
+  <arg name="display-rviz" default="false"/>
 
   <include file="$(find-pkg-share nextage_tutorials)/launch/raw/jsk_robot_state_publisher.launch.xml">
     <arg name="use_sim_time" value="$(var use_sim_time)"/>
@@ -109,7 +109,7 @@
 
   <include file="$(find-pkg-share nextage_tutorials)/launch/raw/dual_touch.launch.xml"/>
 
-  <include file="$(find-pkg-share nextage_tutorials)/launch/raw/jsk-nextage-rviz.launch.xml" if="$(var launch_rviz)">
+  <include file="$(find-pkg-share nextage_tutorials)/launch/raw/jsk-nextage-rviz.launch.xml" if="$(var display-rviz)">
     <arg name="log_level" value="$(var log_level)"/>
   </include>
 </launch>
