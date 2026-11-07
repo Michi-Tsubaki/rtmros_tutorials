@@ -27,22 +27,29 @@
   #f(31.905903 68.529998 36.32414))
 (setq *nextage-teleop-gripper-tip-offset* #f(0 0 67.43))
 (setq *nextage-teleop-position-scale* 2.0)
-(setq *nextage-teleop-rate* 20.0)
-(setq *nextage-teleop-command-rate* 20.0)
-(setq *nextage-teleop-send-time* 200)
+(setq *nextage-teleop-rate* 40.0)
+(setq *nextage-teleop-command-rate* 40.0)
+(setq *nextage-teleop-send-time* 100)
 (setq *nextage-teleop-command-transport* :action)
 (setq *nextage-teleop-command-topic* "/fullbody_controller/command")
 (setq *nextage-teleop-preempt-active-goal* t)
 (setq *nextage-teleop-initial-pose-time* 5000)
 (setq *nextage-teleop-use-torso* nil)
-(setq *nextage-teleop-debug-mode* t)
+(setq *nextage-teleop-debug-mode* nil)
 (setq *nextage-teleop-check-self-collision* t)
 (setq *nextage-teleop-debug-print-period* 20)
 (setq *nextage-teleop-left-tool* :gripper)
-(setq *nextage-teleop-right-tool* :gripper)
+(setq *nextage-teleop-right-tool* :needle_holder)
+;; The former right gripper is now on /dev/lhand with motor ID 2.
+;; Preserve its actuator angles and effort rather than the old left gripper's.
+(setq *lhand-gripper-open-position* 0.0)
+(setq *lhand-gripper-close-position* *rhand-gripper-close-position*)
+(setq *lhand-gripper-effort* *rhand-gripper-effort*)
+(setq *lhand-gripper-close-effort* *rhand-gripper-close-effort*)
+;; dual_hand selects ID 2 for lhand/gripper and ID 5 for rhand/needle_holder.
 (setq *nextage-teleop-launch-hand-controller* t)
 (setq *nextage-teleop-hand-launch-command*
-  "nohup bash -lc \"source ~/colcon_ws/install/setup.bash && exec ros2 launch dynamixel_detachable_hand dual_hand.launch.xml left_tool:=gripper right_tool:=gripper\" > /tmp/nextage_teleop_dynamixel_hand.log 2>&1 &")
+  "nohup bash -lc \"source ~/colcon_ws/install/setup.bash && exec ros2 launch dynamixel_detachable_hand dual_hand.launch.xml left_tool:=gripper right_tool:=needle_holder\" > /tmp/nextage_teleop_dynamixel_hand.log 2>&1 &")
 (setq *nextage-teleop-hand-launch-wait* 5.0)
 (setq *nextage-teleop-hand-server-timeout* 15.0)
 (setq *nextage-teleop-gripper-open-time* 0.25)
@@ -167,8 +174,14 @@
 
 (defun nt-pinch-coords (robot arm)
   (let* ((a (detachable-tool-normalize-arm arm))
+         (tool (case a
+                 (:larm *nextage-teleop-left-tool*)
+                 (:rarm *nextage-teleop-right-tool*)))
          (parent (nt-pinch-parent robot a))
          coords)
+    ;; Other tools use their own calibrated tip relative to arm end-coords.
+    (unless (eq tool :gripper)
+      (setq parent (send robot a :end-coords)))
     (setq coords
           (case a
             (:larm *nextage-teleop-left-pinch-coords*)
@@ -176,11 +189,18 @@
     (unless (and coords (eq (send coords :parent) parent))
       (when coords
         (nt-dissoc-coords coords))
-      (setq coords
+      (if (eq tool :gripper)
+          (setq coords
             (nt-new-pinch parent
                           (case a
                             (:larm :larm-gripper-pinch)
                             (:rarm :rarm-gripper-pinch))))
+        (progn
+          (setq coords (make-cascoords :name :tool-pinch))
+          (send parent :assoc coords)
+          (send coords :newcoords (make-coords))
+          (dolist (op (detachable-tool-default-tip-ops :nextage a tool))
+            (detachable-tool-apply-tip-op coords op))))
       (case a
         (:larm (setq *nextage-teleop-left-pinch-coords* coords))
         (:rarm (setq *nextage-teleop-right-pinch-coords* coords))))
@@ -246,7 +266,8 @@
 
 (defun nt-apply-offset (target calibration)
   (send target :translate (car calibration) :world)
-  (send target :orient (m* (cadr calibration) (send target :rot)) :world)
+  ;; :orient takes (theta axis &optional wrt), even for a matrix.
+  (send target :orient (m* (cadr calibration) (send target :rot)) nil :world)
   target)
 
 (defun nt-target-coords
@@ -262,8 +283,10 @@
     (send robot arm :inverse-kinematics
           target
           :move-target move-target
+          ;; Tool tips may have intermediate coordinates as their parent.
+          ;; Build the joint chain from the wrist link, not that coordinate.
           :link-list (send robot :link-list
-                           (send move-target :parent)
+                           (nt-pinch-parent robot arm)
                            (send robot arm :root-link))
           :rotation-axis t
           :stop 10
@@ -285,7 +308,7 @@
 
 (defun nt-hand-command
     (close-state previous-state hand tool)
-  (when (not (eq close-state previous-state))
+  (when (and hand (not (eq close-state previous-state)))
     (if close-state
         (nt-close-tool hand tool)
       (nt-open-tool hand tool)))
@@ -363,8 +386,11 @@
     (send robot :head :angle-vector #f(0 0))
     (send robot :larm :move-end-pos #f(0 0 -50))
     (send robot :rarm :move-end-pos #f(0 0 -50))
-    (send *ri* :angle-vector (send robot :angle-vector) tm)
-    (send *ri* :wait-interpolation)))
+    (unless (send *ri* :angle-vector (send robot :angle-vector) tm)
+      (error "NEXTAGE teleop: failed to send initial pose"))
+    (unless (send *ri* :wait-interpolation)
+      (error "NEXTAGE teleop: initial pose did not complete; stopping before calibration"))
+    (ros::ros-info "NEXTAGE teleop: initial pose completed")))
 
 (defun nt-hand-server-status (lhand rhand timeout)
   (let ((left-ready (send lhand :wait-for-server timeout))
@@ -409,12 +435,17 @@
                  *nextage-teleop-lhand*
                  *nextage-teleop-rhand*
                  server-timeout)))
-    (unless (nt-hand-server-ready-p status)
-      (error
-       "dynamixel detachable gripper action servers are unavailable: left=~A right=~A timeout=~A log=/tmp/nextage_teleop_dynamixel_hand.log"
-       (car status) (cadr status) server-timeout))
+    ;; Keep arm teleoperation available even when either hand is absent.
+    (unless (car status)
+      (setq *nextage-teleop-lhand* nil)
+      (ros::ros-warn
+       "NEXTAGE teleop: left gripper action server unavailable; continuing with left hand commands disabled"))
+    (unless (cadr status)
+      (setq *nextage-teleop-rhand* nil)
+      (ros::ros-warn
+       "NEXTAGE teleop: right gripper action server unavailable; continuing with right hand commands disabled"))
     (ros::ros-info
-     "NEXTAGE teleop: gripper action servers are ready: left=~A right=~A"
+     "NEXTAGE teleop: gripper action server availability: left=~A right=~A"
      (car status) (cadr status)))
   (list *nextage-teleop-lhand* *nextage-teleop-rhand*))
 
@@ -454,7 +485,7 @@
      ((:install-tool-tips install-tool-tips) t)
      ((:controller-action controller-action)
       "/fullbody_controller/follow_joint_trajectory_action")
-     ((:joint-states-topic joint-states-topic) "/robot/joint_states"))
+     ((:joint-states-topic joint-states-topic) "/joint_states"))
   (unless (nt-positive-number-p rate)
     (error "rate must be positive Hz: ~A" rate))
   (unless (nt-positive-number-p command-rate)
