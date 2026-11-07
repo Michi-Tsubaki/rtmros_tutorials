@@ -22,7 +22,7 @@
   <exec_depend>kinematics_interface_kdl</exec_depend>
   <depend>builtin_interfaces</depend>
   <depend>control_msgs</depend>
-  <exec_depend>dynamixel_detachable_hand</exec_depend>
+  <exec_depend>detachable_tools</exec_depend>
   <depend>geometry_msgs</depend>
   <exec_depend>image_view</exec_depend>
   <exec_depend>interactive_markers</exec_depend>
