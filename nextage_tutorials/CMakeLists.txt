@@ -43,7 +43,6 @@ install(PROGRAMS
   scripts/mygeneralist_nextage.py
   scripts/nextage_topic_bridge.sh
   scripts/viser_teleope.py
-  scripts/touch_hid_teleop.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
