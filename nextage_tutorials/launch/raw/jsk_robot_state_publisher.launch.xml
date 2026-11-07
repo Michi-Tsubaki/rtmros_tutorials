@@ -5,10 +5,13 @@
   <arg name="publish_gripper_joint_states" default="true"/>
   <arg name="gripper_joint_state_rate" default="10.0"/>
   <arg name="gripper_position" default="0.05"/>
+  <let name="robot_state_topic" value="joint_states"/>
+  <let name="robot_state_topic" value="display_joint_states" if="$(var publish_gripper_joint_states)"/>
 
   <node pkg="robot_state_publisher" exec="robot_state_publisher" name="robot_state_publisher" output="screen">
     <param name="robot_description" value="$(command 'xacro $(var model)')"/>
     <param name="use_sim_time" value="$(var use_sim_time)"/>
+    <remap from="joint_states" to="$(var robot_state_topic)"/>
   </node>
 
   <node
@@ -21,5 +24,7 @@
     <param name="left_position" value="$(var gripper_position)"/>
     <param name="right_position" value="$(var gripper_position)"/>
     <param name="publish_rate" value="$(var gripper_joint_state_rate)"/>
+    <param name="source_topic" value="joint_states"/>
+    <param name="output_topic" value="display_joint_states"/>
   </node>
 </launch>

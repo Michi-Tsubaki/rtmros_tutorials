@@ -1,0 +1,26 @@
+# Overrides for the topic transport, which uses gravity/bias-compensated data.
+/**/larm_admittance_controller:
+  ros__parameters:
+    gravity_compensation:
+      CoG:
+        force: 0.0
+    # Start with just one translational degree of freedom.
+    admittance:
+      selected_axes: [true, false, false, false, false, false]
+    # Resolve fixed transforms in the six-joint chain; chest is stationary.
+    fixed_world_frame:
+      frame:
+        id: CHEST_JOINT0_Link
+
+/**/rarm_admittance_controller:
+  ros__parameters:
+    gravity_compensation:
+      CoG:
+        force: 0.0
+    # Start with just one translational degree of freedom.
+    admittance:
+      selected_axes: [true, false, false, false, false, false]
+    # Resolve fixed transforms in the six-joint chain; chest is stationary.
+    fixed_world_frame:
+      frame:
+        id: CHEST_JOINT0_Link

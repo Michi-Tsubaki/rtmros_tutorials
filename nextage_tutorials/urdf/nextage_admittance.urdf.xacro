@@ -1,0 +1,78 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="NextageOpen">
+  <xacro:arg name="use_left" default="true"/>
+  <xacro:arg name="use_right" default="true"/>
+  <xacro:arg name="initial_states" default="{}"/>
+  <xacro:property name="initial_states" value="${dict($(arg initial_states))}"/>
+  <xacro:include filename="JSKNextageOpenGripper.urdf"/>
+  <xacro:macro name="control_joint" params="name lower upper">
+    <joint name="${name}">
+      <param name="lower">${lower}</param>
+      <param name="upper">${upper}</param>
+      <command_interface name="position"/>
+      <state_interface name="position">
+        <param name="initial_value">${initial_states.get(name, 0.0)}</param>
+      </state_interface>
+    </joint>
+  </xacro:macro>
+  <xacro:macro name="ft_sensor" params="side prefix">
+    <sensor name="${side}_ft_sensor">
+      <state_interface name="force.x">
+        <param name="initial_value">${initial_states.get(side + "_ft_sensor/force.x", 0.0)}</param>
+      </state_interface>
+      <state_interface name="force.y">
+        <param name="initial_value">${initial_states.get(side + "_ft_sensor/force.y", 0.0)}</param>
+      </state_interface>
+      <state_interface name="force.z">
+        <param name="initial_value">${initial_states.get(side + "_ft_sensor/force.z", 0.0)}</param>
+      </state_interface>
+      <state_interface name="torque.x">
+        <param name="initial_value">${initial_states.get(side + "_ft_sensor/torque.x", 0.0)}</param>
+      </state_interface>
+      <state_interface name="torque.y">
+        <param name="initial_value">${initial_states.get(side + "_ft_sensor/torque.y", 0.0)}</param>
+      </state_interface>
+      <state_interface name="torque.z">
+        <param name="initial_value">${initial_states.get(side + "_ft_sensor/torque.z", 0.0)}</param>
+      </state_interface>
+    </sensor>
+  </xacro:macro>
+  <ros2_control name="nextage_joints" type="system">
+    <hardware>
+      <plugin>joint_state_topic_hardware_interface/JointStateTopicSystem</plugin>
+      <param name="joint_states_topic">/admittance/joint_states</param>
+      <param name="joint_commands_topic">/admittance/joint_commands</param>
+      <param name="trigger_joint_command_threshold">-1.0</param>
+    </hardware>
+    <xacro:if value="$(arg use_left)">
+      <xacro:control_joint name="LARM_JOINT0" lower="-1.53588998" upper="1.53588998"/>
+      <xacro:control_joint name="LARM_JOINT1" lower="-2.44345999" upper="1.04719996"/>
+      <xacro:control_joint name="LARM_JOINT2" lower="-2.7576201" upper="0"/>
+      <xacro:control_joint name="LARM_JOINT3" lower="-1.8326" upper="2.87979007"/>
+      <xacro:control_joint name="LARM_JOINT4" lower="-1.74532998" upper="1.74532998"/>
+      <xacro:control_joint name="LARM_JOINT5" lower="-2.84489012" upper="2.84489012"/>
+
+    </xacro:if>
+    <xacro:if value="$(arg use_right)">
+      <xacro:control_joint name="RARM_JOINT0" lower="-1.53588998" upper="1.53588998"/>
+      <xacro:control_joint name="RARM_JOINT1" lower="-2.44345999" upper="1.04719996"/>
+      <xacro:control_joint name="RARM_JOINT2" lower="-2.7576201" upper="0"/>
+      <xacro:control_joint name="RARM_JOINT3" lower="-2.87979007" upper="1.8326"/>
+      <xacro:control_joint name="RARM_JOINT4" lower="-1.74532998" upper="1.74532998"/>
+      <xacro:control_joint name="RARM_JOINT5" lower="-2.84489012" upper="2.84489012"/>
+
+    </xacro:if>
+  </ros2_control>
+  <!-- CMTopicSystem maps state_interface.<sensor>/<axis> statistics into FT states. -->
+  <ros2_control name="nextage_ft" type="system">
+    <hardware>
+      <plugin>cm_topic_hardware_component/CMTopicSystem</plugin>
+    </hardware>
+    <xacro:if value="$(arg use_left)">
+      <xacro:ft_sensor side="left" prefix="LARM"/>
+    </xacro:if>
+    <xacro:if value="$(arg use_right)">
+      <xacro:ft_sensor side="right" prefix="RARM"/>
+    </xacro:if>
+  </ros2_control>
+</robot>

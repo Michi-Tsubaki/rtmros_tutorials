@@ -1,36 +1,43 @@
 <?xml version="1.0"?>
 <launch>
-  <!-- One-arm ros2_control transport; defaults to inactive commissioning mode. -->
-  <arg name="arm" default="larm">
-    <choice value="larm"/>
-    <choice value="rarm"/>
-  </arg>
+  <arg name="controller_manager_timeout" default="30" />
   <arg name="inactive" default="true">
-    <choice value="true"/>
-    <choice value="false"/>
+    <choice value="true" />
+    <choice value="false" />
   </arg>
+  <arg name="params_file" default="$(find-pkg-share nextage_tutorials)/config/nextage_admittance.yaml" />
   <arg name="require_enable" default="false">
-    <choice value="true"/>
-    <choice value="false"/>
+    <choice value="true" />
+    <choice value="false" />
   </arg>
-
-  <let name="controller" value="$(var arm)_admittance_controller"/>
-  <let name="activation_args" value="--inactive" if="$(var inactive)"/>
-  <let name="activation_args" value="" unless="$(var inactive)"/>
-
-  <node pkg="robot_state_publisher" exec="robot_state_publisher"
-        namespace="admittance" name="control_description" output="screen">
-    <param name="robot_description" type="str"
-           value="$(command '$(find-pkg-prefix nextage_tutorials)/lib/nextage_tutorials/admittance_robot_description.py --arm $(var arm) --require-enable $(var require_enable)')"/>
-    <remap from="joint_states" to="/joint_states"/>
-    <remap from="/tf" to="/admittance/model_tf"/>
-    <remap from="/tf_static" to="/admittance/model_tf_static"/>
+  <!-- Detect once and validate feedback before starting nodes. -->
+  <let name="detected" value="$(command '&quot;$(find-pkg-prefix nextage_tutorials)/lib/nextage_tutorials/detect_admittance_sensors.py&quot; admittance_bringup' 'warn')" />
+  <let name="use_left" value="$(eval &quot;'larm' in $(var detected)['arms']&quot;)" />
+  <let name="use_right" value="$(eval &quot;'rarm' in $(var detected)['arms']&quot;)" />
+  <let name="activation_args" value="$(eval &quot;'--inactive' if '$(var inactive)' == 'true' else '--activate-as-group'&quot;)" />
+  <let name="controller_manager" value="/admittance/controller_manager" />
+  <node pkg="nextage_tutorials" exec="admittance_topic_adapter.py" output="screen">
+    <param name="arms" value="$(eval &quot;$(var detected)['arms']&quot;)" />
+    <param name="require_enable" value="$(var require_enable)" />
   </node>
-  <node pkg="controller_manager" exec="ros2_control_node"
-        namespace="admittance" output="screen">
-    <param name="update_rate" value="50"/>
-    <param name="$(var controller).type" value="admittance_controller/AdmittanceController"/>
+  <node pkg="robot_state_publisher" exec="robot_state_publisher" namespace="admittance" name="control_description" output="screen">
+    <param name="robot_description" value="$(eval &quot;xacro.process_file('$(find-pkg-share nextage_tutorials)/urdf/nextage_admittance.urdf.xacro', mappings={'use_left': '$(var use_left)', 'use_right': '$(var use_right)', 'initial_states': str($(var detected)['initial_state'])}).toxml()&quot; &quot;xacro&quot;)" type="str" />
+    <remap from="joint_states" to="/joint_states" />
+    <remap from="/tf" to="/admittance/model_tf" />
+    <remap from="/tf_static" to="/admittance/model_tf_static" />
   </node>
-  <node pkg="controller_manager" exec="spawner" output="screen"
-        args="$(var controller) -c /admittance/controller_manager --param-file $(find-pkg-share nextage_tutorials)/config/nextage_admittance.yaml --param-file $(find-pkg-share nextage_tutorials)/config/nextage_admittance_bringup.yaml --controller-manager-timeout 30 $(var activation_args)"/>
+  <node pkg="controller_manager" exec="ros2_control_node" namespace="admittance" output="screen">
+    <param name="update_rate" value="50" />
+    <param name="larm_admittance_controller.type" value="admittance_controller/AdmittanceController" />
+    <param name="rarm_admittance_controller.type" value="admittance_controller/AdmittanceController" />
+  </node>
+  <group if="$(eval &quot;$(var detected)['arms'] == ['larm']&quot;)">
+    <node pkg="controller_manager" exec="spawner" output="screen" args="larm_admittance_controller --param-file $(var params_file) --param-file $(find-pkg-share nextage_tutorials)/config/nextage_admittance_bringup.yaml --controller-manager $(var controller_manager) --controller-manager-timeout $(var controller_manager_timeout) $(var activation_args)" />
+  </group>
+  <group if="$(eval &quot;$(var detected)['arms'] == ['rarm']&quot;)">
+    <node pkg="controller_manager" exec="spawner" output="screen" args="rarm_admittance_controller --param-file $(var params_file) --param-file $(find-pkg-share nextage_tutorials)/config/nextage_admittance_bringup.yaml --controller-manager $(var controller_manager) --controller-manager-timeout $(var controller_manager_timeout) $(var activation_args)" />
+  </group>
+  <group if="$(eval &quot;$(var detected)['arms'] == ['larm', 'rarm']&quot;)">
+    <node pkg="controller_manager" exec="spawner" output="screen" args="larm_admittance_controller rarm_admittance_controller --param-file $(var params_file) --param-file $(find-pkg-share nextage_tutorials)/config/nextage_admittance_bringup.yaml --controller-manager $(var controller_manager) --controller-manager-timeout $(var controller_manager_timeout) $(var activation_args)" />
+  </group>
 </launch>

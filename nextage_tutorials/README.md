@@ -33,6 +33,20 @@ source ~/colcon_ws/install/setup.bash
 ros2 launch nextage_tutorials nextage.launch.xml 
 ```
 
+### JointStateの配信
+
+ブリッジ由来の `/joint_states` はNEXTAGE本体の状態として維持します。
+`nextage.launch.xml` の補助グリッパーノードは、本体の受信メッセージに
+`lhand_joint` / `rhand_joint` の既定位置を補い、`/display_joint_states` に配信します。
+`robot_state_publisher` はこの統合済みトピックを使用します。元のタイムスタンプと
+既存の関節値は保持し、本体データが来ない間は配信しません。
+これにより、グリッパーだけのメッセージが `/joint_states` に混在しなくなります。
+`publish_gripper_joint_states:=false` の場合は従来どおり本体の `/joint_states` を直接使用します。
+
+`gripper_joint_state_publisher.py` 単独起動時は従来の周期配信が既定です。
+統合モードでは `source_topic` と異なる `output_topic` を指定してください。
+このモードの配信周期は本体の受信周期に従い、`publish_rate` は単独配信時だけ使用します。
+
 ### カメラ構成
 
 `nextage.launch.xml` は次の3台とRVizの3つのImage表示を起動します。
@@ -99,7 +113,7 @@ Ctrl-Cで終了できます。姿勢の多様性不足、静止時のばらつ�
 
 ### Admittance controllerへの接続
 
-`admittance.launch.xml` は既存のROS 2 controller_managerに片腕のコントローラを
+`admittance.launch.xml` は既存のROS 2 controller_managerに検出した腕のコントローラを
 登録します。既定ではinactiveです。現在のhrpsysのROS 1→ROS 2 actionブリッジだけでは
 実行できません。`admittance_controller` と `kinematics_interface_kdl` に加えて、
 関節のposition command/stateと力覚6成分のstate interfacesを公開する
@@ -107,10 +121,10 @@ ros2_control hardware adapterが必要です。`config/nextage_admittance.yaml` 
 FT名も、そのadapterが公開する名前に合わせてください。
 
 ```bash
-ros2 launch nextage_tutorials admittance.launch.xml arm:=rarm
-# hardware adapterがバイアスのみ補正した値を提供する場合:
-ros2 launch nextage_tutorials admittance.launch.xml arm:=rarm \
-  gravity_params_file:=$HOME/.ros/nextage/rarm_ft_payload.admittance.yaml
+ros2 launch nextage_tutorials admittance.launch.xml
+# hardware adapterがバイアスのみ補正した値を提供する場合（検出される全腕の設定を含める）:
+ros2 launch nextage_tutorials admittance.launch.xml \
+  gravity_params_file:=/path/to/combined_payload.admittance.yaml
 ```
 
 生成されたadmittance用重力設定は、hardware adapter側でセンサの符号と
@@ -123,42 +137,63 @@ ros2 launch nextage_tutorials admittance.launch.xml arm:=rarm \
 姿勢が変わる用途では上記の複数姿勢キャリブレーションを使います。
 キャリブレーション中にadmittance制御を同時に有効にしないでください。
 
-### hrpsysトピック経由の実機接続（2026-11-06検証）
+### hrpsysトピック経由の接続
 
-`admittance_bringup.launch.py` は `nextage_tutorials/TopicSystem` を使って、
-腕の6関節と補償済み力覚6成分を `/admittance/controller_manager` に公開します。
-既存の `/joint_states` と `/fullbody_controller/command` のROS 1ブリッジを使用します。
+`admittance_bringup.launch.xml` は既存の `topic_based_hardware_interfaces` を使います。
+関節には `joint_state_topic_hardware_interface/JointStateTopicSystem`、
+力センサには `cm_topic_hardware_component/CMTopicSystem` を使用し、独自hardware pluginはありません。
+
+通信経路は hrpsys ↔ ROS 1 ↔ ROS 2 ↔ メッセージ変換 ↔ 既存hardware interfaces ↔ admittance controller です。
+`scripts/admittance_topic_adapter.py` は以下の形式変換と送信時の制限だけを担当します。
+
+- `/joint_states` → positionのみの `/admittance/joint_states`。
+- `/admittance/joint_commands` (`JointState`) → `/fullbody_controller/command` (`JointTrajectory`)。
+- 補償済み `WrenchStamped` → `CMTopicSystem` が受け取る `pal_statistics_msgs`。
+  `state_interface.left_ft_sensor/force.x` 等の名前で6成分を対応付けます。
+
+CMTopicSystemの仕様は [上流ドキュメント](https://github.com/ros-controls/topic_based_hardware_interfaces/blob/main/doc/index.rst) を参照してください。
+ROS 2側の `/joint_states` と `/fullbody_controller/command` を既存のROS 1ブリッジに接続します。
 元の `admittance.launch.xml` は既存managerへの登録用として残しています。
-このアダプタは片腕ずつの小変位試験用です。50 Hzで制御計算し、軌道送信は最大25 Hz、
+このアダプタは小変位試験用です。50 Hzで制御計算し、軌道送信は最大25 Hz、
 目標時間は100 msです。通信を介した制御なのでハードリアルタイムではありません。
 
-#### 左手だけ起動
+#### センサを自動検出して起動
 
-前提：ROS 1ブリッジ・力センサ起動済み、校正済み。各ターミナルで
-`source ~/colcon_ws/install/setup.bash` を実行してください。
-Touch teleopと他の腕指令ノードは停止し、左右のbringupを同時起動しないでください。
-同じ腕の補償ノードが既に動いている場合はターミナル1を省略します。
+前提：ROS 1ブリッジ・力センサ起動済み、見えている両腕の校正済み。
+各ターミナルで `source ~/colcon_ws/install/setup.bash` を実行してください。
+Touch teleopと他の腕指令ノードは停止してください。
 
 ```bash
-# ターミナル1：保存済みの重力補償
-ros2 launch nextage_tutorials ft_compensation.launch.xml arm:=larm
-# ターミナル2：左腕のadmittance制御を有効にして起動
-ros2 launch nextage_tutorials admittance_bringup.launch.py arm:=larm inactive:=false
-# 停止（別ターミナル）
-ros2 control switch_controllers -c /admittance/controller_manager --deactivate larm_admittance_controller --strict
+# ターミナル1：保存済みの重力・バイアス補償
+ros2 launch nextage_tutorials ft_compensation.launch.xml
+# ターミナル2：検出した腕のadmittance制御（デフォルトはinactive）
+ros2 launch nextage_tutorials admittance_bringup.launch.xml
+# 起動時から有効にする場合
+ros2 launch nextage_tutorials admittance_bringup.launch.xml inactive:=false
 ```
 
-#### 右手だけ起動
+`arm` 引数はありません。起動時に5秒間、生の力センサトピックを観測し、
+新しいデータを受信できる腕を選びます。左右ともあれば両腕、片方だけなら片腕、
+どちらもなければ起動エラーです。後から接続したセンサの追加は再起動が必要です。
+補償済みデータが出ない腕を黙って除外せず、校正や補償のエラーとして扱います。
+補償ファイルは `~/.ros/nextage/{larm,rarm}_ft_payload.yaml` です。
+既に補償トピックの送信元がある腕については補償ノードを追加しません。
 
-前提は左手と同じです。腕を切り替えるときは、先に起動済みのbringupをCtrl-Cで終了します。
+両腕の場合も1つの変換ノードが左右の目標をまとめて全身指令を送ります。
+コントローラのactivity通知を使い、activeな腕の指令だけを送ります。
+`urdf/nextage_admittance.urdf.xacro` が既存URDFにros2_controlの関節・センサ定義を追加します。
+腕の選択は起動時のみです。運転中のセンサ切断時は既存の鮮度チェックで停止します。
+
+模擬センサを使った検出・両腕/片腕起動・指令統合・通信断停止の検証：
 
 ```bash
-# ターミナル1：保存済みの重力補償
-ros2 launch nextage_tutorials ft_compensation.launch.xml arm:=rarm
-# ターミナル2：右腕のadmittance制御を有効にして起動
-ros2 launch nextage_tutorials admittance_bringup.launch.py arm:=rarm inactive:=false
-# 停止（別ターミナル）
-ros2 control switch_controllers -c /admittance/controller_manager --deactivate rarm_admittance_controller --strict
+ROS_DOMAIN_ID=177 ROS_LOCALHOST_ONLY=1 python3 test/check_admittance_auto.py
+ROS_DOMAIN_ID=177 ROS_LOCALHOST_ONLY=1 python3 test/check_admittance_adapter.py
+```
+
+```bash
+# 両腕の制御を停止（片腕だけの場合はそのコントローラ名だけを指定）
+ros2 control switch_controllers -c /admittance/controller_manager --deactivate larm_admittance_controller rarm_admittance_controller --strict
 ```
 
 #### 再校正が必要な場合
@@ -193,6 +228,7 @@ ros2 launch nextage_tutorials ft_payload_calibration.launch.xml arm:=larm wrench
 力覚ドライバには再接続時のDTR設定、シリアルの排他open、2秒測定断での終了を追加しています。
 既存のrespawn設定により、USB復帰後に再接続します。別launchで同じセンサを重複起動しないでください。
 
+以下は旧TopicSystem構成での実機検証記録です。既存プラグインへの移行後は模擬入力で検証し、実機では未検証です。
 実機では左右それぞれ9姿勢から同定し、推定質量は左0.2567 kg、右0.2321 kgでした。
 センサXの目標力オフセット0.5 Nで、左約2.62 mm・右約2.46 mmの手先変位と
 ゼロ指令への復帰を確認しました。試験後はinactiveです。
@@ -203,6 +239,5 @@ ros2 launch nextage_tutorials ft_payload_calibration.launch.xml arm:=larm wrench
 
 ```bash
 python3 -m unittest discover -s test -p test_ft_payload.py
-# 実機のdomainとは別のROS_DOMAIN_ID=179で模擬関節・力を使用。
-python3 test/check_admittance_transport.py
+# 現行構成の検証は上記 check_admittance_auto.py / check_admittance_adapter.py を使用。
 ```
